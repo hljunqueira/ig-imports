@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-br" class="scroll-smooth dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IG Imports | Luxury Sportswear</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#D4AF37",
+              "gold-light": "#F9E29B",
+              "gold-dark": "#B8860B",
+              "background-dark": "#050505",
+              "card-dark": "#0F0F0F",
+              "sidebar-dark": "#0A0A0A",
+              "accent-gold": "#C5A028"
+            },
+            fontFamily: {
+              display: ["Cinzel", "serif"],
+              sans: ["Inter", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "2px",
+            },
+          },
+        },
+      };
+    </script>
+    <style type="text/tailwindcss">
+      @layer utilities {
+        .gold-gradient {
+          background: linear-gradient(135deg, #D4AF37 0%, #F9E29B 50%, #B8860B 100%);
+        }
+        .text-gold-gradient {
+          background: linear-gradient(135deg, #D4AF37 0%, #F9E29B 50%, #B8860B 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+        .hero-overlay {
+          background: radial-gradient(circle at center, rgba(5,5,5,0.2) 0%, rgba(5,5,5,0.95) 100%);
+        }
+        .glass-nav {
+          background: rgba(5, 5, 5, 0.85);
+          backdrop-filter: blur(12px);
+          border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+        }
+        .glass-panel {
+            background: rgba(15, 15, 15, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(212, 175, 55, 0.1);
+        }
+        .product-card-shine {
+          position: relative;
+          overflow: hidden;
+        }
+        .product-card-shine::after {
+          content: '';
+          position: absolute;
+          top: -50%;
+          left: -50%;
+          width: 200%;
+          height: 200%;
+          background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+          transform: rotate(45deg);
+          transition: 0.7s;
+          opacity: 0;
+        }
+        .product-card-shine:hover::after {
+          left: 100%;
+          opacity: 1;
+        }
+        .luxury-border {
+          border: 1px solid;
+          border-image-source: linear-gradient(135deg, #D4AF37 0%, #0F0F0F 50%, #B8860B 100%);
+          border-image-slice: 1;
+        }
+        .luxury-table-row:hover {
+            background: rgba(212, 175, 55, 0.03);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #050505;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #1a1a1a;
+            border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #D4AF37;
+        }
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-router-dom": "https://esm.sh/react-router-dom@^7.12.0"
+  }
+}
+</script>
+</head>
+  <body class="bg-background-dark text-slate-100 font-sans antialiased">
+    <div id="root"></div>
+  </body>
+</html>
