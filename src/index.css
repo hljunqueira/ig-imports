@@ -1,0 +1,110 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #D4AF37;
+  --color-gold-light: #F9E29B;
+  --color-gold-dark: #B8860B;
+  --color-background-dark: #050505;
+  --color-card-dark: #0F0F0F;
+  --color-sidebar-dark: #0A0A0A;
+  --color-accent-gold: #C5A028;
+
+  --font-display: "Cinzel", serif;
+  --font-sans: "Inter", sans-serif;
+
+  --radius-DEFAULT: 2px;
+}
+
+@layer utilities {
+  .gold-gradient {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-gold-light) 50%, var(--color-gold-dark) 100%);
+  }
+
+  .text-gold-gradient {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-gold-light) 50%, var(--color-gold-dark) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .hero-overlay {
+    background: radial-gradient(circle at center, rgba(5, 5, 5, 0.2) 0%, rgba(5, 5, 5, 0.95) 100%);
+  }
+
+  .glass-nav {
+    background: rgba(5, 5, 5, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+  }
+
+  .glass-panel {
+    background: rgba(15, 15, 15, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(212, 175, 55, 0.1);
+  }
+
+  .product-card-shine {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .product-card-shine::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transform: rotate(45deg);
+    transition: 0.7s;
+    opacity: 0;
+  }
+
+  .product-card-shine:hover::after {
+    left: 100%;
+    opacity: 1;
+  }
+
+  .luxury-border {
+    border: 1px solid;
+    border-image-source: linear-gradient(135deg, var(--color-primary) 0%, #0F0F0F 50%, var(--color-gold-dark) 100%);
+    border-image-slice: 1;
+  }
+
+  .luxury-table-row:hover {
+    background: rgba(212, 175, 55, 0.03);
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .stroke-text {
+    -webkit-text-stroke: 1px var(--color-primary);
+    color: transparent;
+  }
+}
+
+/* Custom Scrollbar from HTML */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #050505;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1a1a1a;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+}
