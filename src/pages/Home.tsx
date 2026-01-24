@@ -106,7 +106,7 @@ const Home: React.FC = () => {
 
           {/* Dynamic Jersey - Parallax & Float & Morph */}
           <motion.div
-            className="absolute top-1/2 right-[-5%] md:right-[5%] -translate-y-1/2 z-50 w-[90vw] md:w-[45vw] max-w-[550px] aspect-square pointer-events-none flex items-center justify-center"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 md:translate-x-0 md:left-auto md:right-[5%] z-50 w-[120vw] sm:w-[80vw] md:w-[45vw] max-w-[550px] aspect-square pointer-events-none flex items-center justify-center opacity-40 md:opacity-100 mix-blend-screen md:mix-blend-normal mt-10 md:mt-0"
           >
             <AnimatePresence mode='wait'>
               <motion.img
@@ -139,7 +139,7 @@ const Home: React.FC = () => {
                   <span className="h-[1px] w-12 bg-primary/50"></span>
                 </div>
                 {/* Text with backdrop blur to stand out against jersey */}
-                <h1 className="text-6xl md:text-8xl lg:text-9xl font-display font-bold text-white leading-[0.9] tracking-tighter mb-8 relative text-center md:text-left">
+                <h1 className="text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-display font-bold text-white leading-[0.9] tracking-tighter mb-8 relative text-center md:text-left">
                   VISTA A <br />
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-[#F9E29B] italic relative inline-block">
                     GRANDEZA
