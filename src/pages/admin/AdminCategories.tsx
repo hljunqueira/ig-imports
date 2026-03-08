@@ -331,7 +331,7 @@ const AdminCategories: React.FC = () => {
                                 </label>
                                 {/* URL manual */}
                                 <input
-                                    type="url"
+                                    type="text"
                                     value={formData.image_url}
                                     onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
                                     placeholder="Ou cole a URL da imagem"

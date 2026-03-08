@@ -516,7 +516,7 @@ const AdminProducts: React.FC = () => {
                                     {uploading ? 'Enviando...' : 'Upload'}
                                 </label>
                                 <input
-                                    type="url"
+                                    type="text"
                                     value={formData.image_url}
                                     onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
                                     placeholder="Ou cole a URL da imagem"
