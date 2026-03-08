@@ -21,7 +21,9 @@ const getImageUrl = (imageUrl: string | undefined): string => {
     return imageUrl;
   }
   // Se for caminho relativo, adiciona a base da API
-  const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+  // Remove /api do final se existir
+  const API_BASE = API_URL.replace(/\/api$/, '');
   return `${API_BASE}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
 };
 

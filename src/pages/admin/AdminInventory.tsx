@@ -12,7 +12,8 @@ const getImageUrl = (imageUrl: string | undefined): string => {
     return imageUrl;
   }
   // Se for caminho relativo, adiciona a base da API
-  const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+  const API_BASE = API_URL.replace(/\/api$/, '');
   return `${API_BASE}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
 };
 
@@ -286,6 +287,7 @@ const AdminInventory: React.FC = () => {
                                     <div className="flex items-center gap-3">
                                         {m.product.image_url && (
                                             <img src={getImageUrl(m.product.image_url)} alt={m.product.name} className="w-10 h-10 object-cover rounded" />
+                                            
                                         )}
                                         <span className="text-white text-sm">{m.product.name}</span>
                                     </div>
