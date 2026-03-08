@@ -151,7 +151,7 @@ const AdminDashboardHome: React.FC = () => {
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-12 bg-card-dark border border-white/5 overflow-hidden">
                                             <img
-                                                src={product.image_url || 'https://via.placeholder.com/40'}
+                                                src={product.image_url || '/ig-imports-logo.png'}
                                                 alt={product.name}
                                                 className="w-full h-full object-cover"
                                             />

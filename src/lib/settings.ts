@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { apiClient } from './api';
 
 // ========================================
 // TYPES
@@ -58,29 +58,19 @@ export interface CouponInput {
 
 export const settingsService = {
     async get(): Promise<StoreSettings | null> {
-        const { data, error } = await supabase
-            .from('store_settings')
-            .select('*')
-            .eq('id', 1)
-            .single();
-
-        if (error) {
+        try {
+            const response = await apiClient.get<{ success: boolean; data: StoreSettings }>('/settings');
+            return response.success ? response.data : null;
+        } catch (error) {
             console.error('Error fetching settings:', error);
             return null;
         }
-        return data;
     },
 
     async update(settings: Partial<StoreSettings>): Promise<StoreSettings> {
-        const { data, error } = await supabase
-            .from('store_settings')
-            .update(settings)
-            .eq('id', 1)
-            .select()
-            .single();
-
-        if (error) throw new Error(error.message);
-        return data;
+        const response = await apiClient.put<{ success: boolean; data: StoreSettings }>('/settings', settings);
+        if (!response.success) throw new Error('Failed to update settings');
+        return response.data;
     },
 };
 
@@ -90,76 +80,40 @@ export const settingsService = {
 
 export const couponService = {
     async getAll(): Promise<Coupon[]> {
-        const { data, error } = await supabase
-            .from('coupons')
-            .select('*')
-            .order('created_at', { ascending: false });
-
-        if (error) throw new Error(error.message);
-        return data || [];
+        const response = await apiClient.get<{ success: boolean; data: Coupon[] }>('/coupons');
+        return response.success ? response.data : [];
     },
 
     async getByCode(code: string): Promise<Coupon | null> {
-        const { data, error } = await supabase
-            .from('coupons')
-            .select('*')
-            .eq('code', code.toUpperCase())
-            .eq('is_active', true)
-            .single();
-
-        if (error) return null;
-        return data;
+        try {
+            const response = await apiClient.get<{ success: boolean; data: Coupon }>(`/coupons/code/${code}`);
+            return response.success ? response.data : null;
+        } catch {
+            return null;
+        }
     },
 
     async create(coupon: CouponInput): Promise<Coupon> {
-        const { data, error } = await supabase
-            .from('coupons')
-            .insert({ ...coupon, code: coupon.code.toUpperCase() })
-            .select()
-            .single();
-
-        if (error) throw new Error(error.message);
-        return data;
+        const response = await apiClient.post<{ success: boolean; data: Coupon }>('/coupons', {
+            ...coupon,
+            code: coupon.code.toUpperCase()
+        });
+        if (!response.success) throw new Error('Failed to create coupon');
+        return response.data;
     },
 
     async update(id: string, coupon: Partial<CouponInput>): Promise<Coupon> {
-        const { data, error } = await supabase
-            .from('coupons')
-            .update(coupon)
-            .eq('id', id)
-            .select()
-            .single();
-
-        if (error) throw new Error(error.message);
-        return data;
+        const response = await apiClient.put<{ success: boolean; data: Coupon }>(`/coupons/${id}`, coupon);
+        if (!response.success) throw new Error('Failed to update coupon');
+        return response.data;
     },
 
     async delete(id: string): Promise<void> {
-        const { error } = await supabase
-            .from('coupons')
-            .delete()
-            .eq('id', id);
-
-        if (error) throw new Error(error.message);
+        await apiClient.delete(`/coupons/${id}`);
     },
 
     async incrementUsage(id: string): Promise<void> {
-        const { error } = await supabase.rpc('increment_coupon_usage', { coupon_id: id });
-        if (error) {
-            // Fallback: update directly
-            const { data: coupon } = await supabase
-                .from('coupons')
-                .select('current_uses')
-                .eq('id', id)
-                .single();
-            
-            if (coupon) {
-                await supabase
-                    .from('coupons')
-                    .update({ current_uses: coupon.current_uses + 1 })
-                    .eq('id', id);
-            }
-        }
+        await apiClient.patch(`/coupons/${id}/increment`, {});
     },
 
     validate(coupon: Coupon, orderTotal: number): { valid: boolean; message?: string } {

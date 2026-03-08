@@ -4,9 +4,11 @@ import { IMAGES } from '../constants';
 import { NavItem } from '../types';
 import { useCartStore } from '../store/cartStore';
 import { useAuthStore } from '../store/authStore';
+import { Category, categoryService } from '../lib/products';
 
 const Navbar: React.FC = () => {
     const [scrolled, setScrolled] = useState(false);
+    const [categories, setCategories] = useState<Category[]>([]);
     const location = useLocation();
     const navigate = useNavigate();
     const { itemCount, openCart } = useCartStore();
@@ -18,6 +20,21 @@ const Navbar: React.FC = () => {
         };
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    // Carregar categorias dinâmicas do banco
+    useEffect(() => {
+        const loadCategories = async () => {
+            try {
+                const data = await categoryService.getAll();
+                // Filtrar apenas categorias ativas
+                const activeCategories = data.filter(cat => cat.is_active);
+                setCategories(activeCategories);
+            } catch (error) {
+                console.error('Error loading categories:', error);
+            }
+        };
+        loadCategories();
     }, []);
 
     const handleNavigation = (href: string) => {
@@ -41,21 +58,20 @@ const Navbar: React.FC = () => {
         navigate('/');
     };
 
+    // Categorias dinâmicas para o dropdown
+    const categoryChildren = categories.slice(0, 6).map(cat => ({
+        label: cat.name,
+        href: `/catalog?category=${cat.slug}`
+    }));
+
     const navLinks: NavItem[] = [
         { label: "Início", href: "hero" },
-        {
-            label: "Clubes Europeus",
+        ...(categories.length > 0 ? [{
+            label: "Categorias",
             href: "/catalog",
-            children: [
-                { label: "Premier League", href: "/catalog?category=premier-league" },
-                { label: "La Liga", href: "/catalog?category=la-liga" },
-                { label: "Bundesliga", href: "/catalog?category=bundesliga" },
-                { label: "Serie A", href: "/catalog?category=serie-a" },
-            ]
-        },
-        { label: "Seleções", href: "/catalog?category=selecoes" },
-        { label: "Brasileirão", href: "/catalog?category=brasileirao" },
-        { label: "Outros", href: "/catalog?category=outros" },
+            children: categoryChildren.length > 0 ? categoryChildren : [{ label: "Ver Todos", href: "/catalog" }]
+        }] : []),
+        { label: "Catálogo", href: "/catalog" },
     ];
 
     const count = itemCount();

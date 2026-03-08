@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { IMAGES } from '../constants';
 import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import ProductCard from '../components/ProductCard';
-import { Product, productService } from '../lib/products';
+import { Product, Category, productService, categoryService } from '../lib/products';
+import { reviewsService } from '../lib/reviews';
+import { requestsService } from '../lib/requests';
+import { settingsService, StoreSettings } from '../lib/settings';
+import { formatCurrency } from '../lib/utils';
+import type { ProductReview, ProductRequest } from '../types';
 
 const JERSEYS = [
   "/hero-jersey-removebg-preview.png",
@@ -18,9 +23,30 @@ const JERSEYS = [
 const Home: React.FC = () => {
   const [currentJerseyIndex, setCurrentJerseyIndex] = useState(0);
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [reviews, setReviews] = useState<ProductReview[]>([]);
+  const [settings, setSettings] = useState<StoreSettings | null>(null);
   const [loadingProducts, setLoadingProducts] = useState(true);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [loadingReviews, setLoadingReviews] = useState(true);
+  
+  // Formulário de encomenda
+  const [requestForm, setRequestForm] = useState({
+    customer_name: '',
+    customer_phone: '',
+    customer_email: '',
+    product_description: '',
+    preferred_brand: '',
+    preferred_size: '',
+    quantity: 1,
+    max_budget: '',
+    urgency: 'normal' as 'low' | 'normal' | 'high' | 'urgent',
+  });
+  const [submittingRequest, setSubmittingRequest] = useState(false);
+  const [requestSuccess, setRequestSuccess] = useState(false);
 
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (location.state && (location.state as any).scrollTo) {
@@ -41,30 +67,73 @@ const Home: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Carregar dados da API
   useEffect(() => {
-    const loadFeatured = async () => {
+    const loadData = async () => {
       try {
+        // Produtos em destaque
         const products = await productService.getAll({ status: 'active', featured: true });
-        // Se não houver destaque, pegar os 4 primeiros ativos
         if (products.length === 0) {
           const all = await productService.getAll({ status: 'active' });
           setFeaturedProducts(all.slice(0, 4));
         } else {
           setFeaturedProducts(products.slice(0, 4));
         }
-      } catch {
-        setFeaturedProducts([]);
-      } finally {
         setLoadingProducts(false);
+
+        // Categorias ativas
+        const cats = await categoryService.getAll();
+        setCategories(cats.filter(c => c.is_active).slice(0, 6));
+        setLoadingCategories(false);
+
+        // Avaliações aprovadas e destacadas
+        const revs = await reviewsService.getReviews({ approved: true, featured: true });
+        setReviews(revs.slice(0, 4));
+        setLoadingReviews(false);
+
+        // Configurações da loja
+        const storeSettings = await settingsService.get();
+        setSettings(storeSettings);
+      } catch (error) {
+        console.error('Error loading home data:', error);
       }
     };
-    loadFeatured();
+    loadData();
   }, []);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleRequestSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmittingRequest(true);
+    try {
+      await requestsService.createRequest({
+        ...requestForm,
+        max_budget: requestForm.max_budget ? parseFloat(requestForm.max_budget) : undefined,
+      });
+      setRequestSuccess(true);
+      setRequestForm({
+        customer_name: '',
+        customer_phone: '',
+        customer_email: '',
+        product_description: '',
+        preferred_brand: '',
+        preferred_size: '',
+        quantity: 1,
+        max_budget: '',
+        urgency: 'normal',
+      });
+      setTimeout(() => setRequestSuccess(false), 5000);
+    } catch (error) {
+      console.error('Error submitting request:', error);
+      alert('Erro ao enviar solicitação. Tente novamente.');
+    } finally {
+      setSubmittingRequest(false);
     }
   };
 
@@ -189,6 +258,68 @@ const Home: React.FC = () => {
         </div>
       </section>
 
+      {/* Categories Section */}
+      <section id="categories" className="py-20 bg-background-dark relative z-20">
+        <div className="max-w-480 mx-auto px-6 sm:px-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-12"
+          >
+            <span className="text-primary text-xs font-bold tracking-[0.5em] uppercase mb-3 block">Navegue por</span>
+            <h2 className="text-3xl md:text-4xl font-display font-bold text-white">
+              NOSSAS <span className="text-primary">CATEGORIAS</span>
+            </h2>
+          </motion.div>
+
+          {loadingCategories ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              {[1, 2, 3, 4, 5, 6].map((n) => (
+                <div key={n} className="animate-pulse bg-gray-800 aspect-square rounded-sm"></div>
+              ))}
+            </div>
+          ) : categories.length > 0 ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4"
+            >
+              {categories.map((category) => (
+                <Link
+                  key={category.id}
+                  to={`/catalog?category=${category.slug}`}
+                  className="group relative aspect-square overflow-hidden bg-gray-900 rounded-sm"
+                >
+                  {category.image_url ? (
+                    <img
+                      src={category.image_url}
+                      alt={category.name}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-800">
+                      <span className="material-symbols-outlined text-4xl text-gray-600">category</span>
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-black/60 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                    <span className="text-white text-xs font-bold uppercase tracking-widest text-center px-2">
+                      {category.name}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </motion.div>
+          ) : (
+            <div className="text-center py-16 text-gray-600">
+              <span className="material-symbols-outlined text-5xl mb-4 block">category</span>
+              <p className="text-sm">Categorias em breve</p>
+            </div>
+          )}
+        </div>
+      </section>
+
       {/* Featured Products Section */}
       <section className="py-20 bg-background-dark relative z-20">
         <div className="max-w-480 mx-auto px-6 sm:px-12">
@@ -249,6 +380,267 @@ const Home: React.FC = () => {
               Ver todos os produtos →
             </Link>
           </div>
+        </div>
+      </section>
+
+      {/* Reviews Section */}
+      <section id="reviews" className="py-20 bg-background-dark relative z-20">
+        <div className="max-w-480 mx-auto px-6 sm:px-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-12"
+          >
+            <span className="text-primary text-xs font-bold tracking-[0.5em] uppercase mb-3 block">O que dizem nossos clientes</span>
+            <h2 className="text-3xl md:text-4xl font-display font-bold text-white">
+              AVALIAÇÕES <span className="text-primary">REAIS</span>
+            </h2>
+          </motion.div>
+
+          {loadingReviews ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[1, 2, 3, 4].map((n) => (
+                <div key={n} className="animate-pulse bg-gray-800 p-6 rounded-sm">
+                  <div className="h-4 bg-gray-700 w-1/2 mb-4"></div>
+                  <div className="h-3 bg-gray-700 w-full mb-2"></div>
+                  <div className="h-3 bg-gray-700 w-3/4"></div>
+                </div>
+              ))}
+            </div>
+          ) : reviews.length > 0 ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+            >
+              {reviews.map((review) => (
+                <div key={review.id} className="bg-card-dark border border-white/5 p-6">
+                  <div className="flex items-center gap-1 mb-4">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <span
+                        key={star}
+                        className={`material-symbols-outlined text-sm ${
+                          star <= review.rating ? 'text-primary' : 'text-gray-600'
+                        }`}
+                      >
+                        star
+                      </span>
+                    ))}
+                  </div>
+                  <p className="text-gray-300 text-sm mb-4 line-clamp-3">{review.comment}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-white text-xs font-bold">{review.customer_name}</span>
+                    {review.is_featured && (
+                      <span className="text-primary text-[10px] uppercase tracking-widest">Destaque</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </motion.div>
+          ) : (
+            <div className="text-center py-16 text-gray-600">
+              <span className="material-symbols-outlined text-5xl mb-4 block">reviews</span>
+              <p className="text-sm">Avaliações em breve</p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Request Product Section */}
+      <section id="encomenda" className="py-20 bg-background-dark relative z-20">
+        <div className="max-w-480 mx-auto px-6 sm:px-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <span className="text-primary text-xs font-bold tracking-[0.5em] uppercase mb-3 block">Não encontrou?</span>
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-white mb-6">
+                SOLICITE UMA <span className="text-primary">ENCOMENDA</span>
+              </h2>
+              <p className="text-gray-400 mb-8">
+                Não encontrou o produto que procura? Descreva o que você precisa e nossa equipe 
+                entrará em contato com um orçamento personalizado.
+              </p>
+              
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <span className="material-symbols-outlined text-primary text-2xl">check_circle</span>
+                  <span className="text-gray-300 text-sm">Produtos exclusivos e importados</span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span className="material-symbols-outlined text-primary text-2xl">check_circle</span>
+                  <span className="text-gray-300 text-sm">Orçamento em até 24h</span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span className="material-symbols-outlined text-primary text-2xl">check_circle</span>
+                  <span className="text-gray-300 text-sm">Melhor preço garantido</span>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="bg-card-dark border border-white/5 p-8"
+            >
+              {requestSuccess ? (
+                <div className="text-center py-8">
+                  <span className="material-symbols-outlined text-5xl text-emerald-500 mb-4">check_circle</span>
+                  <h3 className="text-xl font-bold text-white mb-2">Solicitação Enviada!</h3>
+                  <p className="text-gray-400 text-sm">Entraremos em contato em breve.</p>
+                </div>
+              ) : (
+                <form onSubmit={handleRequestSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Nome</label>
+                    <input
+                      type="text"
+                      required
+                      value={requestForm.customer_name}
+                      onChange={(e) => setRequestForm({ ...requestForm, customer_name: e.target.value })}
+                      className="w-full bg-background-dark border border-white/10 px-4 py-3 text-sm text-white focus:border-primary outline-none transition-colors"
+                      placeholder="Seu nome"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Telefone</label>
+                      <input
+                        type="tel"
+                        required
+                        value={requestForm.customer_phone}
+                        onChange={(e) => setRequestForm({ ...requestForm, customer_phone: e.target.value })}
+                        className="w-full bg-background-dark border border-white/10 px-4 py-3 text-sm text-white focus:border-primary outline-none transition-colors"
+                        placeholder="(48) 99999-9999"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Email</label>
+                      <input
+                        type="email"
+                        value={requestForm.customer_email}
+                        onChange={(e) => setRequestForm({ ...requestForm, customer_email: e.target.value })}
+                        className="w-full bg-background-dark border border-white/10 px-4 py-3 text-sm text-white focus:border-primary outline-none transition-colors"
+                        placeholder="seu@email.com"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Descrição do Produto</label>
+                    <textarea
+                      required
+                      rows={3}
+                      value={requestForm.product_description}
+                      onChange={(e) => setRequestForm({ ...requestForm, product_description: e.target.value })}
+                      className="w-full bg-background-dark border border-white/10 px-4 py-3 text-sm text-white focus:border-primary outline-none transition-colors resize-none"
+                      placeholder="Descreva o produto que você procura..."
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Marca Preferida</label>
+                      <input
+                        type="text"
+                        value={requestForm.preferred_brand}
+                        onChange={(e) => setRequestForm({ ...requestForm, preferred_brand: e.target.value })}
+                        className="w-full bg-background-dark border border-white/10 px-4 py-3 text-sm text-white focus:border-primary outline-none transition-colors"
+                        placeholder="Ex: Nike, Adidas..."
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Tamanho</label>
+                      <input
+                        type="text"
+                        value={requestForm.preferred_size}
+                        onChange={(e) => setRequestForm({ ...requestForm, preferred_size: e.target.value })}
+                        className="w-full bg-background-dark border border-white/10 px-4 py-3 text-sm text-white focus:border-primary outline-none transition-colors"
+                        placeholder="Ex: M, G, GG..."
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Quantidade</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={requestForm.quantity}
+                        onChange={(e) => setRequestForm({ ...requestForm, quantity: parseInt(e.target.value) || 1 })}
+                        className="w-full bg-background-dark border border-white/10 px-4 py-3 text-sm text-white focus:border-primary outline-none transition-colors"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Orçamento Máx (R$)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={requestForm.max_budget}
+                        onChange={(e) => setRequestForm({ ...requestForm, max_budget: e.target.value })}
+                        className="w-full bg-background-dark border border-white/10 px-4 py-3 text-sm text-white focus:border-primary outline-none transition-colors"
+                        placeholder="0,00"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Urgência</label>
+                    <select
+                      value={requestForm.urgency}
+                      onChange={(e) => setRequestForm({ ...requestForm, urgency: e.target.value as any })}
+                      className="w-full bg-background-dark border border-white/10 px-4 py-3 text-sm text-white focus:border-primary outline-none transition-colors"
+                    >
+                      <option value="low">Baixa</option>
+                      <option value="normal">Normal</option>
+                      <option value="high">Alta</option>
+                      <option value="urgent">Urgente</option>
+                    </select>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={submittingRequest}
+                    className="w-full bg-primary text-black py-4 text-xs font-bold uppercase tracking-[0.2em] hover:bg-white transition-colors disabled:opacity-50"
+                  >
+                    {submittingRequest ? 'Enviando...' : 'Solicitar Encomenda'}
+                  </button>
+                </form>
+              )}
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Track Order CTA Section */}
+      <section className="py-20 bg-background-dark relative z-20">
+        <div className="max-w-480 mx-auto px-6 sm:px-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="bg-gradient-to-r from-primary/10 to-transparent border border-primary/20 p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8"
+          >
+            <div className="text-center md:text-left">
+              <h3 className="text-2xl font-display font-bold text-white mb-2">
+                JÁ FEZ SEU <span className="text-primary">PEDIDO</span>?
+              </h3>
+              <p className="text-gray-400 text-sm">
+                Acompanhe o status do seu pedido em tempo real
+              </p>
+            </div>
+            <button
+              onClick={() => navigate('/client-area')}
+              className="bg-primary text-black px-8 py-4 text-xs font-bold uppercase tracking-[0.2em] hover:bg-white transition-colors whitespace-nowrap"
+            >
+              Consultar Pedido
+            </button>
+          </motion.div>
         </div>
       </section>
 

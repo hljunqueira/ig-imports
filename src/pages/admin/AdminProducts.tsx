@@ -279,7 +279,7 @@ const AdminProducts: React.FC = () => {
                                     <td className="p-6">
                                         <div className="w-16 h-20 bg-card-dark border border-white/5 overflow-hidden">
                                             <img
-                                                src={product.image_url || 'https://via.placeholder.com/64'}
+                                                src={product.image_url || '/ig-imports-logo.png'}
                                                 alt={product.name}
                                                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                                             />

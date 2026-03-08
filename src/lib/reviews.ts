@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { apiClient } from './api';
 import type { ProductReview, ReviewReply } from '../types';
 
 // ========================================
@@ -7,129 +7,62 @@ import type { ProductReview, ReviewReply } from '../types';
 
 export const reviewsService = {
     // Reviews
-    async getReviews(filters?: { productId?: string; approved?: boolean; featured?: boolean }) {
-        let query = supabase
-            .from('product_reviews')
-            .select('*, replies:review_replies(*)')
-            .order('created_at', { ascending: false });
-
-        if (filters?.productId) query = query.eq('product_id', filters.productId);
-        if (filters?.approved !== undefined) query = query.eq('is_approved', filters.approved);
-        if (filters?.featured) query = query.eq('is_featured', true);
-
-        const { data, error } = await query;
-        return { data: data as ProductReview[] | null, error };
+    async getReviews(filters?: { productId?: string; approved?: boolean; featured?: boolean }): Promise<ProductReview[]> {
+        const params = new URLSearchParams();
+        if (filters?.productId) params.append('productId', filters.productId);
+        if (filters?.approved !== undefined) params.append('approved', String(filters.approved));
+        if (filters?.featured) params.append('featured', 'true');
+        
+        const query = params.toString() ? `?${params.toString()}` : '';
+        const response = await apiClient.get<{ success: boolean; data: ProductReview[] }>(`/reviews${query}`);
+        return response.success ? response.data : [];
     },
 
-    async getPendingReviews() {
-        const { data, error } = await supabase
-            .from('product_reviews')
-            .select('*, product:products(name, image_url)')
-            .eq('is_approved', false)
-            .order('created_at', { ascending: false });
-
-        return { data: data as (ProductReview & { product: { name: string; image_url: string } })[] | null, error };
+    async getPendingReviews(): Promise<ProductReview[]> {
+        const response = await apiClient.get<{ success: boolean; data: ProductReview[] }>('/reviews/pending');
+        return response.success ? response.data : [];
     },
 
-    async createReview(review: Omit<ProductReview, 'id' | 'created_at' | 'updated_at' | 'is_approved' | 'is_featured' | 'helpful_count'>) {
-        const { data, error } = await supabase
-            .from('product_reviews')
-            .insert({
-                ...review,
-                is_approved: false,
-                is_featured: false,
-                helpful_count: 0,
-            })
-            .select()
-            .single();
-        return { data: data as ProductReview | null, error };
+    async createReview(review: Omit<ProductReview, 'id' | 'created_at' | 'updated_at' | 'is_approved' | 'is_featured' | 'helpful_count'>): Promise<ProductReview> {
+        const response = await apiClient.post<{ success: boolean; data: ProductReview }>('/reviews', review);
+        if (!response.success) throw new Error('Failed to create review');
+        return response.data;
     },
 
-    async approveReview(id: string) {
-        const { data, error } = await supabase
-            .from('product_reviews')
-            .update({ is_approved: true })
-            .eq('id', id)
-            .select()
-            .single();
-        return { data: data as ProductReview | null, error };
+    async approveReview(id: string): Promise<ProductReview> {
+        const response = await apiClient.patch<{ success: boolean; data: ProductReview }>(`/reviews/${id}/approve`, {});
+        if (!response.success) throw new Error('Failed to approve review');
+        return response.data;
     },
 
-    async rejectReview(id: string) {
-        const { error } = await supabase.from('product_reviews').delete().eq('id', id);
-        return { error };
+    async rejectReview(id: string): Promise<void> {
+        await apiClient.delete(`/reviews/${id}`);
     },
 
-    async featureReview(id: string, featured: boolean) {
-        const { data, error } = await supabase
-            .from('product_reviews')
-            .update({ is_featured: featured })
-            .eq('id', id)
-            .select()
-            .single();
-        return { data: data as ProductReview | null, error };
+    async featureReview(id: string, featured: boolean): Promise<ProductReview> {
+        const response = await apiClient.patch<{ success: boolean; data: ProductReview }>(`/reviews/${id}/feature`, { featured });
+        if (!response.success) throw new Error('Failed to feature review');
+        return response.data;
     },
 
-    async incrementHelpful(id: string) {
-        const { data: review } = await supabase
-            .from('product_reviews')
-            .select('helpful_count')
-            .eq('id', id)
-            .single();
-
-        if (!review) return { data: null, error: { message: 'Review not found' } };
-
-        const { data, error } = await supabase
-            .from('product_reviews')
-            .update({ helpful_count: (review.helpful_count || 0) + 1 })
-            .eq('id', id)
-            .select()
-            .single();
-
-        return { data: data as ProductReview | null, error };
+    async incrementHelpful(id: string): Promise<void> {
+        await apiClient.patch(`/reviews/${id}/helpful`, {});
     },
 
     // Replies
-    async addReply(reply: Omit<ReviewReply, 'id' | 'created_at'>) {
-        const { data, error } = await supabase
-            .from('review_replies')
-            .insert(reply)
-            .select()
-            .single();
-        return { data: data as ReviewReply | null, error };
+    async addReply(reply: Omit<ReviewReply, 'id' | 'created_at'>): Promise<ReviewReply> {
+        const response = await apiClient.post<{ success: boolean; data: ReviewReply }>('/reviews/replies', reply);
+        if (!response.success) throw new Error('Failed to add reply');
+        return response.data;
     },
 
-    async deleteReply(id: string) {
-        const { error } = await supabase.from('review_replies').delete().eq('id', id);
-        return { error };
+    async deleteReply(id: string): Promise<void> {
+        await apiClient.delete(`/reviews/replies/${id}`);
     },
 
     // Estatísticas
     async getProductReviewStats(productId: string) {
-        const { data, error } = await supabase
-            .from('product_reviews')
-            .select('rating')
-            .eq('product_id', productId)
-            .eq('is_approved', true);
-
-        if (error) return { data: null, error };
-
-        const reviews = data || [];
-        const total = reviews.length;
-        const average = total > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / total : 0;
-
-        const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-        reviews.forEach((r) => {
-            distribution[r.rating as 1 | 2 | 3 | 4 | 5]++;
-        });
-
-        return {
-            data: {
-                total,
-                average: Number(average.toFixed(1)),
-                distribution,
-            },
-            error: null,
-        };
+        const response = await apiClient.get<{ success: boolean; data: { total: number; average: number; distribution: Record<string, number> } }>(`/reviews/stats/${productId}`);
+        return response.success ? response.data : { total: 0, average: 0, distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } };
     },
 };
