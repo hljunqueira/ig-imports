@@ -65,8 +65,20 @@ const upload = multer({
 
 // Security middleware
 app.use(helmet());
+
+// CORS — suporta múltiplas origens separadas por vírgula no env
+const allowedOrigins = (process.env.CORS_ORIGIN || '*')
+    .split(',')
+    .map(o => o.trim())
+    .filter(Boolean);
+
 app.use(cors({
-    origin: process.env.CORS_ORIGIN || '*',
+    origin: (origin, callback) => {
+        // Sem origin (ex: curl, mobile) ou wildcard → permite
+        if (!origin || allowedOrigins.includes('*')) return callback(null, true);
+        if (allowedOrigins.includes(origin)) return callback(null, true);
+        callback(new Error(`CORS bloqueado para origem: ${origin}`));
+    },
     credentials: true,
 }));
 
