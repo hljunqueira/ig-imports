@@ -64,7 +64,8 @@ const upload = multer({
 });
 
 // Security middleware
-app.use(helmet());
+// crossOriginResourcePolicy desativado globalmente para permitir imagens cross-origin
+app.use(helmet({ crossOriginResourcePolicy: false }));
 
 // CORS — suporta múltiplas origens separadas por vírgula no env
 const allowedOrigins = (process.env.CORS_ORIGIN || '*')
@@ -117,7 +118,10 @@ app.get('/health', async (req, res) => {
 });
 
 // Static files - uploaded images
-app.use('/uploads', express.static(uploadsDir));
+app.use('/uploads', (req, res, next) => {
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    next();
+}, express.static(uploadsDir));
 
 // Upload route
 app.post('/api/upload', upload.single('file'), (req, res) => {
