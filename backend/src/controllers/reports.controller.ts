@@ -37,7 +37,7 @@ export const getSalesReport = async (req: Request, res: Response): Promise<void>
         res.json({ success: true, data: result.rows });
     } catch (error) {
         console.error('Error generating sales report:', error);
-        res.status(500).json({ success: false, error: 'Failed to generate sales report' });
+        res.status(500).json({ success: false, error: 'Erro ao gerar relatório de vendas' });
     }
 };
 
@@ -71,7 +71,7 @@ export const getTopProducts = async (req: Request, res: Response): Promise<void>
         res.json({ success: true, data: result.rows });
     } catch (error) {
         console.error('Error fetching top products:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch top products' });
+        res.status(500).json({ success: false, error: 'Erro ao buscar produtos mais vendidos' });
     }
 };
 
@@ -102,7 +102,7 @@ export const getSalesByCategory = async (req: Request, res: Response): Promise<v
         res.json({ success: true, data: result.rows });
     } catch (error) {
         console.error('Error fetching sales by category:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch sales by category' });
+        res.status(500).json({ success: false, error: 'Erro ao buscar vendas por categoria' });
     }
 };
 
@@ -129,7 +129,7 @@ export const getFinancialReport = async (req: Request, res: Response): Promise<v
         res.json({ success: true, data: result.rows });
     } catch (error) {
         console.error('Error generating financial report:', error);
-        res.status(500).json({ success: false, error: 'Failed to generate financial report' });
+        res.status(500).json({ success: false, error: 'Erro ao gerar relatório financeiro' });
     }
 };
 
@@ -191,7 +191,7 @@ export const getCustomerAnalytics = async (req: Request, res: Response): Promise
         });
     } catch (error) {
         console.error('Error generating customer analytics:', error);
-        res.status(500).json({ success: false, error: 'Failed to generate customer analytics' });
+        res.status(500).json({ success: false, error: 'Erro ao gerar análise de clientes' });
     }
 };
 
@@ -234,7 +234,7 @@ export const getInventoryReport = async (req: Request, res: Response): Promise<v
         });
     } catch (error) {
         console.error('Error generating inventory report:', error);
-        res.status(500).json({ success: false, error: 'Failed to generate inventory report' });
+        res.status(500).json({ success: false, error: 'Erro ao gerar relatório de estoque' });
     }
 };
 
@@ -300,7 +300,7 @@ export const getDashboardSummary = async (req: Request, res: Response): Promise<
         });
     } catch (error) {
         console.error('Error generating dashboard summary:', error);
-        res.status(500).json({ success: false, error: 'Failed to generate dashboard summary' });
+        res.status(500).json({ success: false, error: 'Erro ao gerar resumo do dashboard' });
     }
 };
 
@@ -343,14 +343,14 @@ export const exportData = async (req: Request, res: Response): Promise<void> => 
                 break;
 
             default:
-                res.status(400).json({ success: false, error: 'Invalid export type' });
+                res.status(400).json({ success: false, error: 'Tipo de exportação inválido' });
                 return;
         }
 
         if (format === 'csv') {
             // Simple CSV conversion
             if (data.length === 0) {
-                res.status(404).json({ success: false, error: 'No data to export' });
+                res.status(404).json({ success: false, error: 'Nenhum dado para exportar' });
                 return;
             }
 
@@ -366,6 +366,6 @@ export const exportData = async (req: Request, res: Response): Promise<void> => 
         }
     } catch (error) {
         console.error('Error exporting data:', error);
-        res.status(500).json({ success: false, error: 'Failed to export data' });
+        res.status(500).json({ success: false, error: 'Erro ao exportar dados' });
     }
 };

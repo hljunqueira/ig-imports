@@ -56,7 +56,7 @@ const Navbar: React.FC = () => {
     const count = itemCount();
 
     return (
-        <nav className={`fixed top-0 z-[100] w-full transition-all duration-300 ${scrolled ? 'bg-black/80 backdrop-blur-md py-2' : 'bg-transparent py-6'}`}>
+        <nav className={`fixed top-0 z-100 w-full transition-all duration-300 ${scrolled ? 'bg-black/80 backdrop-blur-md py-2' : 'bg-transparent py-6'}`}>
             <div className="max-w-480 mx-auto px-6 sm:px-12">
                 <div className="flex justify-between items-center h-16">
                     <div
@@ -142,7 +142,7 @@ const Navbar: React.FC = () => {
 
             {/* Login Modal */}
             {showLoginModal && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+                <div className="fixed inset-0 z-200 flex items-center justify-center bg-black/80 backdrop-blur-sm">
                     <div className="bg-background-dark border border-white/10 p-8 max-w-md w-full mx-4 relative">
                         <button
                             onClick={() => setShowLoginModal(false)}

@@ -40,7 +40,7 @@ export const getSettings = async (req: Request, res: Response): Promise<void> =>
         res.json({ success: true, data: result.rows[0] });
     } catch (error) {
         console.error('Error fetching settings:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch settings' });
+        res.status(500).json({ success: false, error: 'Erro ao buscar configurações' });
     }
 };
 
@@ -116,6 +116,6 @@ export const updateSettings = async (req: AuthRequest, res: Response): Promise<v
         res.json({ success: true, data: result.rows[0] });
     } catch (error) {
         console.error('Error updating settings:', error);
-        res.status(500).json({ success: false, error: 'Failed to update settings' });
+        res.status(500).json({ success: false, error: 'Erro ao atualizar configurações' });
     }
 };

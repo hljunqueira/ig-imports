@@ -7,8 +7,10 @@ import { orderService, Order } from '../lib/orders';
 import { settingsService, StoreSettings } from '../lib/settings';
 import { reviewsService } from '../lib/reviews';
 import type { ProductReview } from '../types';
+import { useDialog } from '../context/DialogContext';
 
 const ClientArea: React.FC = () => {
+    const { error } = useDialog();
     const navigate = useNavigate();
     const [isLogin, setIsLogin] = useState(true);
     const [orders, setOrders] = useState<Order[]>([]);
@@ -53,9 +55,9 @@ const ClientArea: React.FC = () => {
             }
 
             setIsLogin(false);
-        } catch (error) {
-            console.error('Error fetching orders:', error);
-            alert('Erro ao buscar pedidos. Tente novamente.');
+        } catch (err) {
+            console.error('Error fetching orders:', err);
+            await error('Erro ao buscar pedidos. Tente novamente.');
         } finally {
             setLoading(false);
             setLoadingReviews(false);

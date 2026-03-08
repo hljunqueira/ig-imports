@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { requestsService } from '../../lib/requests';
 import type { ProductRequest } from '../../types';
+import { useDialog } from '../../context/DialogContext';
 
 const AdminRequests: React.FC = () => {
+    const { alert: dialogAlert, error } = useDialog();
     const [requests, setRequests] = useState<ProductRequest[]>([]);
     const [stats, setStats] = useState({
         total: 0,
@@ -103,14 +105,14 @@ const AdminRequests: React.FC = () => {
 
         const price = parseFloat(quotePrice);
         if (isNaN(price) || price <= 0) {
-            alert('Preço inválido');
+            await dialogAlert('Preço inválido');
             return;
         }
 
         try {
             await requestsService.quoteRequest(selectedRequest.id, price, undefined, adminNotes);
-        } catch (error) {
-            alert('Erro ao enviar orçamento');
+        } catch (err) {
+            await error('Erro ao enviar orçamento');
             return;
         }
 
@@ -125,8 +127,8 @@ const AdminRequests: React.FC = () => {
         try {
             await requestsService.updateStatus(requestId, newStatus);
             loadData();
-        } catch (error) {
-            alert('Erro ao atualizar status');
+        } catch (err) {
+            await error('Erro ao atualizar status');
         }
     };
 

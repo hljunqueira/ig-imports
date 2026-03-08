@@ -102,7 +102,7 @@ const Philosophy: React.FC = () => {
                                 <motion.div
                                     animate={{ scale: [1, 1.35, 1], opacity: [0.07, 0.01, 0.07] }}
                                     transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-                                    className="absolute w-[28rem] h-[28rem] rounded-full border border-primary/10"
+                                    className="absolute w-md h-112 rounded-full border border-primary/10"
                                 />
                                 {/* Logo pulsante */}
                                 <motion.img

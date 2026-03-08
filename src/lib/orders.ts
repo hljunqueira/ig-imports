@@ -36,7 +36,7 @@ export interface Order {
 export const orderService = {
     async create(order: Omit<Order, 'id' | 'order_number' | 'created_at'>): Promise<Order> {
         const response = await apiClient.post<{ success: boolean; data: Order }>('/orders', order);
-        if (!response.success) throw new Error('Failed to create order');
+        if (!response.success) throw new Error('Erro ao criar pedido');
         return response.data;
     },
 

@@ -25,7 +25,7 @@ export const financeService = {
 
     async createTransaction(transaction: Omit<FinancialTransaction, 'id' | 'created_at' | 'updated_at'>): Promise<FinancialTransaction> {
         const response = await apiClient.post<{ success: boolean; data: FinancialTransaction }>('/finance/transactions', transaction);
-        if (!response.success) throw new Error('Failed to create transaction');
+        if (!response.success) throw new Error('Erro ao criar transação');
         return response.data;
     },
 
@@ -48,13 +48,13 @@ export const financeService = {
 
     async createAccountReceivable(account: Omit<AccountReceivable, 'id' | 'created_at' | 'updated_at'>): Promise<AccountReceivable> {
         const response = await apiClient.post<{ success: boolean; data: AccountReceivable }>('/finance/receivable', account);
-        if (!response.success) throw new Error('Failed to create account receivable');
+        if (!response.success) throw new Error('Erro ao criar conta a receber');
         return response.data;
     },
 
     async receivePayment(id: string, amount: number): Promise<AccountReceivable> {
         const response = await apiClient.post<{ success: boolean; data: AccountReceivable }>(`/finance/receivable/${id}/payment`, { amount });
-        if (!response.success) throw new Error('Failed to receive payment');
+        if (!response.success) throw new Error('Erro ao registrar recebimento');
         return response.data;
     },
 
@@ -67,13 +67,13 @@ export const financeService = {
 
     async createAccountPayable(account: Omit<AccountPayable, 'id' | 'created_at' | 'updated_at'>): Promise<AccountPayable> {
         const response = await apiClient.post<{ success: boolean; data: AccountPayable }>('/finance/payable', account);
-        if (!response.success) throw new Error('Failed to create account payable');
+        if (!response.success) throw new Error('Erro ao criar conta a pagar');
         return response.data;
     },
 
     async makePayment(id: string, amount: number): Promise<AccountPayable> {
         const response = await apiClient.post<{ success: boolean; data: AccountPayable }>(`/finance/payable/${id}/payment`, { amount });
-        if (!response.success) throw new Error('Failed to make payment');
+        if (!response.success) throw new Error('Erro ao registrar pagamento');
         return response.data;
     },
 
@@ -86,7 +86,7 @@ export const financeService = {
 
     async createCategory(category: Omit<FinancialCategory, 'id' | 'created_at'>): Promise<FinancialCategory> {
         const response = await apiClient.post<{ success: boolean; data: FinancialCategory }>('/finance/categories', category);
-        if (!response.success) throw new Error('Failed to create category');
+        if (!response.success) throw new Error('Erro ao criar categoria financeira');
         return response.data;
     },
 };

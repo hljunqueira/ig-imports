@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Category, categoryService } from '../../lib/products';
+import { Category, categoryService, productService } from '../../lib/products';
 import Modal from '../../components/Modal';
+import { useDialog } from '../../context/DialogContext';
 
 const AdminCategories: React.FC = () => {
+    const { error } = useDialog();
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
     const [modalOpen, setModalOpen] = useState(false);
     const [editingCategory, setEditingCategory] = useState<Category | null>(null);
     const [deleteConfirm, setDeleteConfirm] = useState<Category | null>(null);
     const [saving, setSaving] = useState(false);
+    const [uploading, setUploading] = useState(false);
 
     // Form state
     const [formData, setFormData] = useState({
@@ -80,6 +83,21 @@ const AdminCategories: React.FC = () => {
         });
     };
 
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setUploading(true);
+        try {
+            const imageUrl = await productService.uploadImage(file, 'categories');
+            setFormData(prev => ({ ...prev, image_url: imageUrl }));
+        } catch (err) {
+            console.error('Error uploading image:', err);
+            await error('Erro ao fazer upload da imagem');
+        } finally {
+            setUploading(false);
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
@@ -101,9 +119,9 @@ const AdminCategories: React.FC = () => {
 
             await loadCategories();
             handleCloseModal();
-        } catch (error) {
-            console.error('Error saving category:', error);
-            alert('Erro ao salvar categoria');
+        } catch (err) {
+            console.error('Error saving category:', err);
+            await error('Erro ao salvar categoria');
         } finally {
             setSaving(false);
         }
@@ -114,9 +132,9 @@ const AdminCategories: React.FC = () => {
             await categoryService.delete(category.id);
             await loadCategories();
             setDeleteConfirm(null);
-        } catch (error) {
-            console.error('Error deleting category:', error);
-            alert('Erro ao excluir categoria. Verifique se há produtos vinculados.');
+        } catch (err) {
+            console.error('Error deleting category:', err);
+            await error('Erro ao excluir categoria. Verifique se há produtos vinculados.');
         }
     };
 
@@ -257,15 +275,53 @@ const AdminCategories: React.FC = () => {
 
                     <div>
                         <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">
-                            URL da Imagem
+                            Imagem da Categoria
                         </label>
-                        <input
-                            type="url"
-                            value={formData.image_url}
-                            onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                            className="w-full bg-background-dark border border-white/10 px-4 py-3 text-sm text-white focus:border-primary outline-none transition-colors"
-                            placeholder="https://..."
-                        />
+                        <div className="flex gap-4 items-start">
+                            {/* Preview */}
+                            <div className="w-20 h-20 bg-card-dark border border-white/5 overflow-hidden shrink-0">
+                                {formData.image_url ? (
+                                    <img
+                                        src={formData.image_url}
+                                        alt="Preview"
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center">
+                                        <span className="material-symbols-outlined text-2xl text-gray-600">image</span>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="flex-1 space-y-2">
+                                {/* Upload button */}
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageUpload}
+                                    className="hidden"
+                                    id="category-image-upload"
+                                />
+                                <label
+                                    htmlFor="category-image-upload"
+                                    className="inline-flex items-center gap-2 px-4 py-2 border border-white/10 text-[10px] font-bold uppercase tracking-widest hover:border-primary transition-colors cursor-pointer"
+                                >
+                                    {uploading ? (
+                                        <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                                    ) : (
+                                        <span className="material-symbols-outlined text-sm">upload</span>
+                                    )}
+                                    {uploading ? 'Enviando...' : 'Upload'}
+                                </label>
+                                {/* URL manual */}
+                                <input
+                                    type="url"
+                                    value={formData.image_url}
+                                    onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                                    placeholder="Ou cole a URL da imagem"
+                                    className="w-full bg-background-dark border border-white/10 px-4 py-2 text-sm text-white focus:border-primary outline-none transition-colors"
+                                />
+                            </div>
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">

@@ -70,11 +70,13 @@ app.use(cors({
     credentials: true,
 }));
 
-// Rate limiting
+// Rate limiting geral — generoso para uso normal
 const limiter = rateLimit({
-    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'),
-    max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'),
-    message: { error: 'Too many requests, please try again later.' },
+    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'), // 15 min
+    max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '500'),
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Muitas requisições. Aguarde alguns minutos e tente novamente.' },
 });
 app.use(limiter);
 
@@ -109,7 +111,7 @@ app.use('/uploads', express.static(uploadsDir));
 app.post('/api/upload', upload.single('file'), (req, res) => {
     try {
         if (!req.file) {
-            res.status(400).json({ success: false, error: 'No file uploaded' });
+            res.status(400).json({ success: false, error: 'Nenhum arquivo enviado' });
             return;
         }
 
@@ -120,7 +122,7 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
         res.json({ success: true, url });
     } catch (error) {
         console.error('Error uploading file:', error);
-        res.status(500).json({ success: false, error: 'Failed to upload file' });
+        res.status(500).json({ success: false, error: 'Erro ao fazer upload do arquivo' });
     }
 });
 
@@ -139,7 +141,7 @@ app.use('/api/coupons', couponsRoutes);
 
 // 404 handler
 app.use((req, res) => {
-    res.status(404).json({ error: 'Route not found' });
+    res.status(404).json({ error: 'Rota não encontrada' });
 });
 
 // Error handler

@@ -73,13 +73,13 @@ export const categoryService = {
 
     async create(category: Partial<Category>): Promise<Category> {
         const response = await apiClient.post<{ success: boolean; data: Category }>('/categories', category);
-        if (!response.success) throw new Error('Failed to create category');
+        if (!response.success) throw new Error('Erro ao criar categoria');
         return response.data;
     },
 
     async update(id: string, category: Partial<Category>): Promise<Category> {
         const response = await apiClient.put<{ success: boolean; data: Category }>(`/categories/${id}`, category);
-        if (!response.success) throw new Error('Failed to update category');
+        if (!response.success) throw new Error('Erro ao atualizar categoria');
         return response.data;
     },
 
@@ -130,13 +130,13 @@ export const productService = {
 
     async create(product: ProductInput): Promise<Product> {
         const response = await apiClient.post<{ success: boolean; data: Product }>('/products', product);
-        if (!response.success) throw new Error('Failed to create product');
+        if (!response.success) throw new Error('Erro ao criar produto');
         return response.data;
     },
 
     async update(id: string, product: Partial<ProductInput>): Promise<Product> {
         const response = await apiClient.put<{ success: boolean; data: Product }>(`/products/${id}`, product);
-        if (!response.success) throw new Error('Failed to update product');
+        if (!response.success) throw new Error('Erro ao atualizar produto');
         return response.data;
     },
 
@@ -156,7 +156,7 @@ export const productService = {
             headers: token ? { Authorization: `Bearer ${token}` } : {},
             body: formData,
         });
-        if (!response.ok) throw new Error('Failed to upload image');
+        if (!response.ok) throw new Error('Erro ao fazer upload da imagem');
         const data = await response.json();
         return data.url || '';
     },

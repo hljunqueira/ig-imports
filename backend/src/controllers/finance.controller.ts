@@ -37,7 +37,7 @@ export const getTransactions = async (req: Request, res: Response): Promise<void
         res.json({ success: true, data: result.rows });
     } catch (error) {
         console.error('Error fetching transactions:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch transactions' });
+        res.status(500).json({ success: false, error: 'Erro ao buscar transações' });
     }
 };
 
@@ -80,7 +80,7 @@ export const createTransaction = async (req: AuthRequest, res: Response): Promis
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (error) {
         console.error('Error creating transaction:', error);
-        res.status(500).json({ success: false, error: 'Failed to create transaction' });
+        res.status(500).json({ success: false, error: 'Erro ao criar transação' });
     }
 };
 
@@ -130,7 +130,7 @@ export const getFinancialSummary = async (req: Request, res: Response): Promise<
         res.json({ success: true, data: summary });
     } catch (error) {
         console.error('Error fetching financial summary:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch financial summary' });
+        res.status(500).json({ success: false, error: 'Erro ao buscar resumo financeiro' });
     }
 };
 
@@ -153,7 +153,7 @@ export const getAccountsReceivable = async (req: Request, res: Response): Promis
         res.json({ success: true, data: result.rows });
     } catch (error) {
         console.error('Error fetching accounts receivable:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch accounts receivable' });
+        res.status(500).json({ success: false, error: 'Erro ao buscar contas a receber' });
     }
 };
 
@@ -170,7 +170,7 @@ export const createAccountReceivable = async (req: Request, res: Response): Prom
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (error) {
         console.error('Error creating account receivable:', error);
-        res.status(500).json({ success: false, error: 'Failed to create account receivable' });
+        res.status(500).json({ success: false, error: 'Erro ao criar conta a receber' });
     }
 };
 
@@ -211,10 +211,10 @@ export const receivePayment = async (req: Request, res: Response): Promise<void>
             );
         });
 
-        res.json({ success: true, message: 'Payment received successfully' });
+        res.json({ success: true, message: 'Pagamento registrado com sucesso' });
     } catch (error) {
         console.error('Error receiving payment:', error);
-        res.status(500).json({ success: false, error: 'Failed to receive payment' });
+        res.status(500).json({ success: false, error: 'Erro ao registrar pagamento' });
     }
 };
 
@@ -237,7 +237,7 @@ export const getAccountsPayable = async (req: Request, res: Response): Promise<v
         res.json({ success: true, data: result.rows });
     } catch (error) {
         console.error('Error fetching accounts payable:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch accounts payable' });
+        res.status(500).json({ success: false, error: 'Erro ao buscar contas a pagar' });
     }
 };
 
@@ -254,6 +254,6 @@ export const createAccountPayable = async (req: Request, res: Response): Promise
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (error) {
         console.error('Error creating account payable:', error);
-        res.status(500).json({ success: false, error: 'Failed to create account payable' });
+        res.status(500).json({ success: false, error: 'Erro ao criar conta a pagar' });
     }
 };

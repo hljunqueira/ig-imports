@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Order, orderService } from '../../lib/orders';
 import Modal from '../../components/Modal';
+import { useDialog } from '../../context/DialogContext';
 
 const AdminOrders: React.FC = () => {
+    const { error } = useDialog();
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -34,9 +36,9 @@ const AdminOrders: React.FC = () => {
             if (selectedOrder?.id === orderId) {
                 setSelectedOrder({ ...selectedOrder, status: newStatus });
             }
-        } catch (error) {
-            console.error('Error updating order status:', error);
-            alert('Erro ao atualizar status do pedido');
+        } catch (err) {
+            console.error('Error updating order status:', err);
+            await error('Erro ao atualizar status do pedido');
         } finally {
             setUpdating(false);
         }

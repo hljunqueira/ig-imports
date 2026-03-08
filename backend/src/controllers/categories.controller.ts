@@ -19,7 +19,7 @@ export const getCategories = async (req: Request, res: Response): Promise<void> 
         res.json({ success: true, data: result.rows });
     } catch (error) {
         console.error('Error fetching categories:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch categories' });
+        res.status(500).json({ success: false, error: 'Erro ao buscar categorias' });
     }
 };
 
@@ -30,14 +30,14 @@ export const getCategoryById = async (req: Request, res: Response): Promise<void
         const result = await query('SELECT * FROM categories WHERE id = $1', [id]);
 
         if (result.rows.length === 0) {
-            res.status(404).json({ success: false, error: 'Category not found' });
+            res.status(404).json({ success: false, error: 'Categoria não encontrada' });
             return;
         }
 
         res.json({ success: true, data: result.rows[0] });
     } catch (error) {
         console.error('Error fetching category:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch category' });
+        res.status(500).json({ success: false, error: 'Erro ao buscar categoria' });
     }
 };
 
@@ -48,14 +48,14 @@ export const getCategoryBySlug = async (req: Request, res: Response): Promise<vo
         const result = await query('SELECT * FROM categories WHERE slug = $1', [slug]);
 
         if (result.rows.length === 0) {
-            res.status(404).json({ success: false, error: 'Category not found' });
+            res.status(404).json({ success: false, error: 'Categoria não encontrada' });
             return;
         }
 
         res.json({ success: true, data: result.rows[0] });
     } catch (error) {
         console.error('Error fetching category:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch category' });
+        res.status(500).json({ success: false, error: 'Erro ao buscar categoria' });
     }
 };
 
@@ -67,7 +67,7 @@ export const createCategory = async (req: Request, res: Response): Promise<void>
         // Check if slug already exists
         const existing = await query('SELECT * FROM categories WHERE slug = $1', [slug]);
         if (existing.rows.length > 0) {
-            res.status(400).json({ success: false, error: 'Slug already exists' });
+            res.status(400).json({ success: false, error: 'Slug já existe' });
             return;
         }
 
@@ -80,7 +80,7 @@ export const createCategory = async (req: Request, res: Response): Promise<void>
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (error) {
         console.error('Error creating category:', error);
-        res.status(500).json({ success: false, error: 'Failed to create category' });
+        res.status(500).json({ success: false, error: 'Erro ao criar categoria' });
     }
 };
 
@@ -94,7 +94,7 @@ export const updateCategory = async (req: Request, res: Response): Promise<void>
         if (slug) {
             const existing = await query('SELECT * FROM categories WHERE slug = $1 AND id != $2', [slug, id]);
             if (existing.rows.length > 0) {
-                res.status(400).json({ success: false, error: 'Slug already exists' });
+                res.status(400).json({ success: false, error: 'Slug já existe' });
                 return;
             }
         }
@@ -129,7 +129,7 @@ export const updateCategory = async (req: Request, res: Response): Promise<void>
         }
 
         if (updates.length === 0) {
-            res.status(400).json({ success: false, error: 'No fields to update' });
+            res.status(400).json({ success: false, error: 'Nenhum campo para atualizar' });
             return;
         }
 
@@ -139,14 +139,14 @@ export const updateCategory = async (req: Request, res: Response): Promise<void>
         const result = await query(sql, values);
 
         if (result.rows.length === 0) {
-            res.status(404).json({ success: false, error: 'Category not found' });
+            res.status(404).json({ success: false, error: 'Categoria não encontrada' });
             return;
         }
 
         res.json({ success: true, data: result.rows[0] });
     } catch (error) {
         console.error('Error updating category:', error);
-        res.status(500).json({ success: false, error: 'Failed to update category' });
+        res.status(500).json({ success: false, error: 'Erro ao atualizar categoria' });
     }
 };
 
@@ -158,21 +158,21 @@ export const deleteCategory = async (req: Request, res: Response): Promise<void>
         // Check if category has products
         const products = await query('SELECT COUNT(*) FROM products WHERE category_id = $1', [id]);
         if (parseInt(products.rows[0].count) > 0) {
-            res.status(400).json({ success: false, error: 'Cannot delete category with products' });
+            res.status(400).json({ success: false, error: 'Não é possível excluir uma categoria com produtos vinculados' });
             return;
         }
 
         const result = await query('DELETE FROM categories WHERE id = $1 RETURNING *', [id]);
 
         if (result.rows.length === 0) {
-            res.status(404).json({ success: false, error: 'Category not found' });
+            res.status(404).json({ success: false, error: 'Categoria não encontrada' });
             return;
         }
 
-        res.json({ success: true, message: 'Category deleted successfully' });
+        res.json({ success: true, message: 'Categoria excluída com sucesso' });
     } catch (error) {
         console.error('Error deleting category:', error);
-        res.status(500).json({ success: false, error: 'Failed to delete category' });
+        res.status(500).json({ success: false, error: 'Erro ao excluir categoria' });
     }
 };
 
@@ -184,7 +184,7 @@ export const getCategoryWithProducts = async (req: Request, res: Response): Prom
         const categoryResult = await query('SELECT * FROM categories WHERE slug = $1 AND is_active = true', [slug]);
         
         if (categoryResult.rows.length === 0) {
-            res.status(404).json({ success: false, error: 'Category not found' });
+            res.status(404).json({ success: false, error: 'Categoria não encontrada' });
             return;
         }
 
@@ -202,6 +202,6 @@ export const getCategoryWithProducts = async (req: Request, res: Response): Prom
         });
     } catch (error) {
         console.error('Error fetching category with products:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch category' });
+        res.status(500).json({ success: false, error: 'Erro ao buscar categoria' });
     }
 };

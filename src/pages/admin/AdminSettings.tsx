@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { StoreSettings, Coupon, settingsService, couponService } from '../../lib/settings';
 import Modal from '../../components/Modal';
+import { useDialog } from '../../context/DialogContext';
 
 const AdminSettings: React.FC = () => {
+    const { success, error, confirm } = useDialog();
     const [settings, setSettings] = useState<StoreSettings | null>(null);
     const [coupons, setCoupons] = useState<Coupon[]>([]);
     const [loading, setLoading] = useState(true);
@@ -51,10 +53,10 @@ const AdminSettings: React.FC = () => {
         try {
             await settingsService.update(settingsForm);
             setSettings({ ...settings, ...settingsForm } as StoreSettings);
-            alert('Configurações salvas com sucesso!');
-        } catch (error) {
-            console.error('Error saving settings:', error);
-            alert('Erro ao salvar configurações');
+            await success('Configurações salvas com sucesso!');
+        } catch (err) {
+            console.error('Error saving settings:', err);
+            await error('Erro ao salvar configurações');
         } finally {
             setSaving(false);
         }
@@ -109,22 +111,23 @@ const AdminSettings: React.FC = () => {
 
             await loadData();
             setCouponModal(false);
-        } catch (error) {
-            console.error('Error saving coupon:', error);
-            alert('Erro ao salvar cupom');
+        } catch (err) {
+            console.error('Error saving coupon:', err);
+            await error('Erro ao salvar cupom');
         } finally {
             setSaving(false);
         }
     };
 
     const handleDeleteCoupon = async (coupon: Coupon) => {
-        if (!confirm(`Excluir cupom "${coupon.code}"?`)) return;
+        const ok = await confirm(`Excluir cupom "${coupon.code}"?`, 'Excluir Cupom');
+        if (!ok) return;
         try {
             await couponService.delete(coupon.id);
             await loadData();
-        } catch (error) {
-            console.error('Error deleting coupon:', error);
-            alert('Erro ao excluir cupom');
+        } catch (err) {
+            console.error('Error deleting coupon:', err);
+            await error('Erro ao excluir cupom');
         }
     };
 

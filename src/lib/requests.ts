@@ -34,13 +34,13 @@ export const requestsService = {
 
     async createRequest(request: Omit<ProductRequest, 'id' | 'created_at' | 'updated_at' | 'status' | 'quoted_at'>): Promise<ProductRequest> {
         const response = await apiClient.post<{ success: boolean; data: ProductRequest }>('/requests', request);
-        if (!response.success) throw new Error('Failed to create request');
+        if (!response.success) throw new Error('Erro ao criar solicitação');
         return response.data;
     },
 
     async updateRequest(id: string, updates: Partial<ProductRequest>): Promise<ProductRequest> {
         const response = await apiClient.put<{ success: boolean; data: ProductRequest }>(`/requests/${id}`, updates);
-        if (!response.success) throw new Error('Failed to update request');
+        if (!response.success) throw new Error('Erro ao atualizar solicitação');
         return response.data;
     },
 
@@ -54,13 +54,13 @@ export const requestsService = {
             status: newStatus,
             notes
         });
-        if (!response.success) throw new Error('Failed to update status');
+        if (!response.success) throw new Error('Erro ao atualizar status da solicitação');
         return response.data;
     },
 
     async assignRequest(id: string, adminId?: string): Promise<ProductRequest> {
         const response = await apiClient.post<{ success: boolean; data: ProductRequest }>(`/requests/${id}/assign`, {});
-        if (!response.success) throw new Error('Failed to assign request');
+        if (!response.success) throw new Error('Erro ao atribuir solicitação');
         return response.data;
     },
 
@@ -69,7 +69,7 @@ export const requestsService = {
             quoted_price: price,
             admin_notes: notes,
         });
-        if (!response.success) throw new Error('Failed to quote request');
+        if (!response.success) throw new Error('Erro ao enviar orçamento');
         return response.data;
     },
 

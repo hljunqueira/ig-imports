@@ -36,7 +36,7 @@ export const getReviews = async (req: Request, res: Response): Promise<void> => 
         res.json({ success: true, data: result.rows });
     } catch (error) {
         console.error('Error fetching reviews:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch reviews' });
+        res.status(500).json({ success: false, error: 'Erro ao buscar avaliações' });
     }
 };
 
@@ -53,7 +53,7 @@ export const getReviewById = async (req: Request, res: Response): Promise<void> 
         );
 
         if (result.rows.length === 0) {
-            res.status(404).json({ success: false, error: 'Review not found' });
+            res.status(404).json({ success: false, error: 'Avaliação não encontrada' });
             return;
         }
 
@@ -76,7 +76,7 @@ export const getReviewById = async (req: Request, res: Response): Promise<void> 
         });
     } catch (error) {
         console.error('Error fetching review:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch review' });
+        res.status(500).json({ success: false, error: 'Erro ao buscar avaliação' });
     }
 };
 
@@ -87,7 +87,7 @@ export const createReview = async (req: Request, res: Response): Promise<void> =
 
         // Validate rating
         if (rating < 1 || rating > 5) {
-            res.status(400).json({ success: false, error: 'Rating must be between 1 and 5' });
+            res.status(400).json({ success: false, error: 'A nota deve ser entre 1 e 5' });
             return;
         }
 
@@ -100,7 +100,7 @@ export const createReview = async (req: Request, res: Response): Promise<void> =
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (error) {
         console.error('Error creating review:', error);
-        res.status(500).json({ success: false, error: 'Failed to create review' });
+        res.status(500).json({ success: false, error: 'Erro ao criar avaliação' });
     }
 };
 
@@ -114,14 +114,14 @@ export const approveReview = async (req: AuthRequest, res: Response): Promise<vo
         );
 
         if (result.rows.length === 0) {
-            res.status(404).json({ success: false, error: 'Review not found' });
+            res.status(404).json({ success: false, error: 'Avaliação não encontrada' });
             return;
         }
 
         res.json({ success: true, data: result.rows[0] });
     } catch (error) {
         console.error('Error approving review:', error);
-        res.status(500).json({ success: false, error: 'Failed to approve review' });
+        res.status(500).json({ success: false, error: 'Erro ao aprovar avaliação' });
     }
 };
 
@@ -137,14 +137,14 @@ export const featureReview = async (req: AuthRequest, res: Response): Promise<vo
         );
 
         if (result.rows.length === 0) {
-            res.status(404).json({ success: false, error: 'Review not found' });
+            res.status(404).json({ success: false, error: 'Avaliação não encontrada' });
             return;
         }
 
         res.json({ success: true, data: result.rows[0] });
     } catch (error) {
         console.error('Error featuring review:', error);
-        res.status(500).json({ success: false, error: 'Failed to feature review' });
+        res.status(500).json({ success: false, error: 'Erro ao destacar avaliação' });
     }
 };
 
@@ -155,14 +155,14 @@ export const deleteReview = async (req: AuthRequest, res: Response): Promise<voi
         const result = await query('DELETE FROM product_reviews WHERE id = $1 RETURNING *', [id]);
 
         if (result.rows.length === 0) {
-            res.status(404).json({ success: false, error: 'Review not found' });
+            res.status(404).json({ success: false, error: 'Avaliação não encontrada' });
             return;
         }
 
-        res.json({ success: true, message: 'Review deleted successfully' });
+        res.json({ success: true, message: 'Avaliação excluída com sucesso' });
     } catch (error) {
         console.error('Error deleting review:', error);
-        res.status(500).json({ success: false, error: 'Failed to delete review' });
+        res.status(500).json({ success: false, error: 'Erro ao excluir avaliação' });
     }
 };
 
@@ -181,7 +181,7 @@ export const addReply = async (req: AuthRequest, res: Response): Promise<void> =
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (error) {
         console.error('Error adding reply:', error);
-        res.status(500).json({ success: false, error: 'Failed to add reply' });
+        res.status(500).json({ success: false, error: 'Erro ao adicionar resposta' });
     }
 };
 
@@ -195,14 +195,14 @@ export const incrementHelpful = async (req: Request, res: Response): Promise<voi
         );
 
         if (result.rows.length === 0) {
-            res.status(404).json({ success: false, error: 'Review not found' });
+            res.status(404).json({ success: false, error: 'Avaliação não encontrada' });
             return;
         }
 
         res.json({ success: true, data: result.rows[0] });
     } catch (error) {
         console.error('Error incrementing helpful:', error);
-        res.status(500).json({ success: false, error: 'Failed to increment helpful count' });
+        res.status(500).json({ success: false, error: 'Erro ao contabilizar votos úteis' });
     }
 };
 
@@ -242,6 +242,6 @@ export const getProductReviewStats = async (req: Request, res: Response): Promis
         });
     } catch (error) {
         console.error('Error fetching review stats:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch review stats' });
+        res.status(500).json({ success: false, error: 'Erro ao buscar estatísticas da avaliação' });
     }
 };

@@ -26,7 +26,7 @@ export const getStockMovements = async (req: Request, res: Response): Promise<vo
         res.json({ success: true, data: result.rows });
     } catch (error) {
         console.error('Error fetching stock movements:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch stock movements' });
+        res.status(500).json({ success: false, error: 'Erro ao buscar movimentações de estoque' });
     }
 };
 
@@ -75,7 +75,7 @@ export const createStockMovement = async (req: AuthRequest, res: Response): Prom
         res.status(201).json({ success: true, data: result });
     } catch (error) {
         console.error('Error creating stock movement:', error);
-        res.status(500).json({ success: false, error: 'Failed to create stock movement' });
+        res.status(500).json({ success: false, error: 'Erro ao criar movimentação de estoque' });
     }
 };
 
@@ -92,7 +92,7 @@ export const getLowStockProducts = async (req: Request, res: Response): Promise<
         res.json({ success: true, data: result.rows });
     } catch (error) {
         console.error('Error fetching low stock products:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch low stock products' });
+        res.status(500).json({ success: false, error: 'Erro ao buscar produtos com estoque baixo' });
     }
 };
 
@@ -112,7 +112,7 @@ export const getInventoryStats = async (req: Request, res: Response): Promise<vo
         res.json({ success: true, data: result.rows[0] });
     } catch (error) {
         console.error('Error fetching inventory stats:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch inventory stats' });
+        res.status(500).json({ success: false, error: 'Erro ao buscar estatísticas de estoque' });
     }
 };
 
@@ -134,7 +134,7 @@ export const getSuppliers = async (req: Request, res: Response): Promise<void> =
         res.json({ success: true, data: result.rows });
     } catch (error) {
         console.error('Error fetching suppliers:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch suppliers' });
+        res.status(500).json({ success: false, error: 'Erro ao buscar fornecedores' });
     }
 };
 
@@ -151,7 +151,7 @@ export const createSupplier = async (req: Request, res: Response): Promise<void>
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (error) {
         console.error('Error creating supplier:', error);
-        res.status(500).json({ success: false, error: 'Failed to create supplier' });
+        res.status(500).json({ success: false, error: 'Erro ao criar fornecedor' });
     }
 };
 
@@ -173,7 +173,7 @@ export const updateSupplier = async (req: Request, res: Response): Promise<void>
         }
 
         if (setClauses.length === 0) {
-            res.status(400).json({ success: false, error: 'No valid fields to update' });
+            res.status(400).json({ success: false, error: 'Nenhum campo válido para atualizar' });
             return;
         }
 
@@ -183,14 +183,14 @@ export const updateSupplier = async (req: Request, res: Response): Promise<void>
         const result = await query(sql, values);
 
         if (result.rows.length === 0) {
-            res.status(404).json({ success: false, error: 'Supplier not found' });
+            res.status(404).json({ success: false, error: 'Fornecedor não encontrado' });
             return;
         }
 
         res.json({ success: true, data: result.rows[0] });
     } catch (error) {
         console.error('Error updating supplier:', error);
-        res.status(500).json({ success: false, error: 'Failed to update supplier' });
+        res.status(500).json({ success: false, error: 'Erro ao atualizar fornecedor' });
     }
 };
 
@@ -218,7 +218,7 @@ export const getPurchaseOrders = async (req: Request, res: Response): Promise<vo
         res.json({ success: true, data: result.rows });
     } catch (error) {
         console.error('Error fetching purchase orders:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch purchase orders' });
+        res.status(500).json({ success: false, error: 'Erro ao buscar pedidos de compra' });
     }
 };
 
@@ -235,7 +235,7 @@ export const getPurchaseOrderById = async (req: Request, res: Response): Promise
         );
 
         if (orderResult.rows.length === 0) {
-            res.status(404).json({ success: false, error: 'Purchase order not found' });
+            res.status(404).json({ success: false, error: 'Pedido de compra não encontrado' });
             return;
         }
 
@@ -256,7 +256,7 @@ export const getPurchaseOrderById = async (req: Request, res: Response): Promise
         });
     } catch (error) {
         console.error('Error fetching purchase order:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch purchase order' });
+        res.status(500).json({ success: false, error: 'Erro ao buscar pedido de compra' });
     }
 };
 
@@ -291,7 +291,7 @@ export const createPurchaseOrder = async (req: AuthRequest, res: Response): Prom
         res.status(201).json({ success: true, data: result });
     } catch (error) {
         console.error('Error creating purchase order:', error);
-        res.status(500).json({ success: false, error: 'Failed to create purchase order' });
+        res.status(500).json({ success: false, error: 'Erro ao criar pedido de compra' });
     }
 };
 
@@ -306,7 +306,7 @@ export const updatePurchaseOrderStatus = async (req: Request, res: Response): Pr
         );
 
         if (result.rows.length === 0) {
-            res.status(404).json({ success: false, error: 'Purchase order not found' });
+            res.status(404).json({ success: false, error: 'Pedido de compra não encontrado' });
             return;
         }
 
@@ -329,6 +329,6 @@ export const updatePurchaseOrderStatus = async (req: Request, res: Response): Pr
         res.json({ success: true, data: result.rows[0] });
     } catch (error) {
         console.error('Error updating purchase order:', error);
-        res.status(500).json({ success: false, error: 'Failed to update purchase order' });
+        res.status(500).json({ success: false, error: 'Erro ao atualizar pedido de compra' });
     }
 };

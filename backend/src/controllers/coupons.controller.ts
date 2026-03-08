@@ -12,7 +12,7 @@ export const getAllCoupons = async (req: Request, res: Response): Promise<void> 
         res.json({ success: true, data: result.rows });
     } catch (error) {
         console.error('Error fetching coupons:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch coupons' });
+        res.status(500).json({ success: false, error: 'Erro ao buscar cupons' });
     }
 };
 
@@ -23,14 +23,14 @@ export const getCouponById = async (req: Request, res: Response): Promise<void> 
         const result = await query('SELECT * FROM coupons WHERE id = $1', [id]);
 
         if (result.rows.length === 0) {
-            res.status(404).json({ success: false, error: 'Coupon not found' });
+            res.status(404).json({ success: false, error: 'Cupom não encontrado' });
             return;
         }
 
         res.json({ success: true, data: result.rows[0] });
     } catch (error) {
         console.error('Error fetching coupon:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch coupon' });
+        res.status(500).json({ success: false, error: 'Erro ao buscar cupom' });
     }
 };
 
@@ -44,14 +44,14 @@ export const getCouponByCode = async (req: Request, res: Response): Promise<void
         );
 
         if (result.rows.length === 0) {
-            res.status(404).json({ success: false, error: 'Coupon not found' });
+            res.status(404).json({ success: false, error: 'Cupom não encontrado' });
             return;
         }
 
         res.json({ success: true, data: result.rows[0] });
     } catch (error) {
         console.error('Error fetching coupon:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch coupon' });
+        res.status(500).json({ success: false, error: 'Erro ao buscar cupom' });
     }
 };
 
@@ -76,7 +76,7 @@ export const createCoupon = async (req: AuthRequest, res: Response): Promise<voi
         );
 
         if (existing.rows.length > 0) {
-            res.status(400).json({ success: false, error: 'Coupon code already exists' });
+            res.status(400).json({ success: false, error: 'Este código de cupom já existe' });
             return;
         }
 
@@ -101,7 +101,7 @@ export const createCoupon = async (req: AuthRequest, res: Response): Promise<voi
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (error) {
         console.error('Error creating coupon:', error);
-        res.status(500).json({ success: false, error: 'Failed to create coupon' });
+        res.status(500).json({ success: false, error: 'Erro ao criar cupom' });
     }
 };
 
@@ -124,7 +124,7 @@ export const updateCoupon = async (req: AuthRequest, res: Response): Promise<voi
         const existing = await query('SELECT id FROM coupons WHERE id = $1', [id]);
 
         if (existing.rows.length === 0) {
-            res.status(404).json({ success: false, error: 'Coupon not found' });
+            res.status(404).json({ success: false, error: 'Cupom não encontrado' });
             return;
         }
 
@@ -157,7 +157,7 @@ export const updateCoupon = async (req: AuthRequest, res: Response): Promise<voi
         res.json({ success: true, data: result.rows[0] });
     } catch (error) {
         console.error('Error updating coupon:', error);
-        res.status(500).json({ success: false, error: 'Failed to update coupon' });
+        res.status(500).json({ success: false, error: 'Erro ao atualizar cupom' });
     }
 };
 
@@ -168,14 +168,14 @@ export const deleteCoupon = async (req: AuthRequest, res: Response): Promise<voi
         const result = await query('DELETE FROM coupons WHERE id = $1 RETURNING *', [id]);
 
         if (result.rows.length === 0) {
-            res.status(404).json({ success: false, error: 'Coupon not found' });
+            res.status(404).json({ success: false, error: 'Cupom não encontrado' });
             return;
         }
 
-        res.json({ success: true, message: 'Coupon deleted successfully' });
+        res.json({ success: true, message: 'Cupom excluído com sucesso' });
     } catch (error) {
         console.error('Error deleting coupon:', error);
-        res.status(500).json({ success: false, error: 'Failed to delete coupon' });
+        res.status(500).json({ success: false, error: 'Erro ao excluir cupom' });
     }
 };
 
@@ -189,13 +189,13 @@ export const incrementCouponUsage = async (req: Request, res: Response): Promise
         );
 
         if (result.rows.length === 0) {
-            res.status(404).json({ success: false, error: 'Coupon not found' });
+            res.status(404).json({ success: false, error: 'Cupom não encontrado' });
             return;
         }
 
         res.json({ success: true, data: result.rows[0] });
     } catch (error) {
         console.error('Error incrementing coupon usage:', error);
-        res.status(500).json({ success: false, error: 'Failed to increment usage' });
+        res.status(500).json({ success: false, error: 'Erro ao atualizar uso do cupom' });
     }
 };

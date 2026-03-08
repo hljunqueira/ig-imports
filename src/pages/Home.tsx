@@ -11,6 +11,7 @@ import { requestsService } from '../lib/requests';
 import { settingsService, StoreSettings } from '../lib/settings';
 import { formatCurrency } from '../lib/utils';
 import type { ProductReview, ProductRequest } from '../types';
+import { useDialog } from '../context/DialogContext';
 
 const JERSEYS = [
   "/hero-jersey-removebg-preview.png",
@@ -21,6 +22,7 @@ const JERSEYS = [
 ];
 
 const Home: React.FC = () => {
+  const { error } = useDialog();
   const [currentJerseyIndex, setCurrentJerseyIndex] = useState(0);
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -129,9 +131,9 @@ const Home: React.FC = () => {
         urgency: 'normal',
       });
       setTimeout(() => setRequestSuccess(false), 5000);
-    } catch (error) {
-      console.error('Error submitting request:', error);
-      alert('Erro ao enviar solicitação. Tente novamente.');
+    } catch (err) {
+      console.error('Error submitting request:', err);
+      await error('Erro ao enviar solicitação. Tente novamente.');
     } finally {
       setSubmittingRequest(false);
     }
@@ -357,7 +359,7 @@ const Home: React.FC = () => {
       {/* Reviews Section */}
       <section id="reviews" className="py-24 bg-background-dark relative z-20">
         {/* Divisor superior */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
+        <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-primary/30 to-transparent"></div>
 
         <div className="max-w-480 mx-auto px-6 sm:px-12">
           <motion.div
@@ -438,7 +440,7 @@ const Home: React.FC = () => {
         </div>
 
         {/* Divisor inferior */}
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/5 to-transparent"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-white/5 to-transparent"></div>
       </section>
 
       {/* Request Product Section */}

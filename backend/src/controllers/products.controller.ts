@@ -36,7 +36,7 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
         res.json({ success: true, data: result.rows });
     } catch (error) {
         console.error('Error fetching products:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch products' });
+        res.status(500).json({ success: false, error: 'Erro ao buscar produtos' });
     }
 };
 
@@ -53,14 +53,14 @@ export const getProductBySlug = async (req: Request, res: Response): Promise<voi
         );
 
         if (result.rows.length === 0) {
-            res.status(404).json({ success: false, error: 'Product not found' });
+            res.status(404).json({ success: false, error: 'Produto não encontrado' });
             return;
         }
 
         res.json({ success: true, data: result.rows[0] });
     } catch (error) {
         console.error('Error fetching product by slug:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch product' });
+        res.status(500).json({ success: false, error: 'Erro ao buscar produto' });
     }
 };
 
@@ -77,14 +77,14 @@ export const getProductById = async (req: Request, res: Response): Promise<void>
         );
 
         if (result.rows.length === 0) {
-            res.status(404).json({ success: false, error: 'Product not found' });
+            res.status(404).json({ success: false, error: 'Produto não encontrado' });
             return;
         }
 
         res.json({ success: true, data: result.rows[0] });
     } catch (error) {
         console.error('Error fetching product:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch product' });
+        res.status(500).json({ success: false, error: 'Erro ao buscar produto' });
     }
 };
 
@@ -134,7 +134,7 @@ export const createProduct = async (req: Request, res: Response): Promise<void> 
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (error) {
         console.error('Error creating product:', error);
-        res.status(500).json({ success: false, error: 'Failed to create product' });
+        res.status(500).json({ success: false, error: 'Erro ao criar produto' });
     }
 };
 
@@ -162,7 +162,7 @@ export const updateProduct = async (req: Request, res: Response): Promise<void> 
         }
 
         if (setClauses.length === 0) {
-            res.status(400).json({ success: false, error: 'No valid fields to update' });
+            res.status(400).json({ success: false, error: 'Nenhum campo válido para atualizar' });
             return;
         }
 
@@ -172,14 +172,14 @@ export const updateProduct = async (req: Request, res: Response): Promise<void> 
         const result = await query(sql, values);
 
         if (result.rows.length === 0) {
-            res.status(404).json({ success: false, error: 'Product not found' });
+            res.status(404).json({ success: false, error: 'Produto não encontrado' });
             return;
         }
 
         res.json({ success: true, data: result.rows[0] });
     } catch (error) {
         console.error('Error updating product:', error);
-        res.status(500).json({ success: false, error: 'Failed to update product' });
+        res.status(500).json({ success: false, error: 'Erro ao atualizar produto' });
     }
 };
 
@@ -190,14 +190,14 @@ export const deleteProduct = async (req: Request, res: Response): Promise<void> 
         const result = await query('DELETE FROM products WHERE id = $1 RETURNING *', [id]);
 
         if (result.rows.length === 0) {
-            res.status(404).json({ success: false, error: 'Product not found' });
+            res.status(404).json({ success: false, error: 'Produto não encontrado' });
             return;
         }
 
-        res.json({ success: true, message: 'Product deleted successfully' });
+        res.json({ success: true, message: 'Produto excluído com sucesso' });
     } catch (error) {
         console.error('Error deleting product:', error);
-        res.status(500).json({ success: false, error: 'Failed to delete product' });
+        res.status(500).json({ success: false, error: 'Erro ao excluir produto' });
     }
 };
 
@@ -215,7 +215,7 @@ export const getFeaturedProducts = async (req: Request, res: Response): Promise<
         res.json({ success: true, data: result.rows });
     } catch (error) {
         console.error('Error fetching featured products:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch featured products' });
+        res.status(500).json({ success: false, error: 'Erro ao buscar produtos em destaque' });
     }
 };
 
@@ -232,6 +232,6 @@ export const getLowStockProducts = async (req: Request, res: Response): Promise<
         res.json({ success: true, data: result.rows });
     } catch (error) {
         console.error('Error fetching low stock products:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch low stock products' });
+        res.status(500).json({ success: false, error: 'Erro ao buscar produtos com estoque baixo' });
     }
 };

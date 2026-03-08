@@ -25,7 +25,7 @@ export const authService = {
         });
 
         if (!response.success) {
-            throw new Error('Login failed');
+            throw new Error('E-mail ou senha incorretos.');
         }
 
         // Store token

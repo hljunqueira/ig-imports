@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Product, productService, Category, categoryService } from '../../lib/products';
 import Modal from '../../components/Modal';
+import { useDialog } from '../../context/DialogContext';
 
 const AdminProducts: React.FC = () => {
+    const { error } = useDialog();
     const [products, setProducts] = useState<Product[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
@@ -111,9 +113,9 @@ const AdminProducts: React.FC = () => {
         try {
             const imageUrl = await productService.uploadImage(file);
             setFormData({ ...formData, image_url: imageUrl });
-        } catch (error) {
-            console.error('Error uploading image:', error);
-            alert('Erro ao fazer upload da imagem');
+        } catch (err) {
+            console.error('Error uploading image:', err);
+            await error('Erro ao fazer upload da imagem');
         } finally {
             setUploading(false);
         }
@@ -154,9 +156,9 @@ const AdminProducts: React.FC = () => {
 
             await loadData();
             handleCloseModal();
-        } catch (error) {
-            console.error('Error saving product:', error);
-            alert('Erro ao salvar produto');
+        } catch (err) {
+            console.error('Error saving product:', err);
+            await error('Erro ao salvar produto');
         } finally {
             setSaving(false);
         }
@@ -167,9 +169,9 @@ const AdminProducts: React.FC = () => {
             await productService.delete(product.id);
             await loadData();
             setDeleteConfirm(null);
-        } catch (error) {
-            console.error('Error deleting product:', error);
-            alert('Erro ao excluir produto');
+        } catch (err) {
+            console.error('Error deleting product:', err);
+            await error('Erro ao excluir produto');
         }
     };
 

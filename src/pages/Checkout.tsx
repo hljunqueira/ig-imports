@@ -6,8 +6,10 @@ import Footer from '../components/Footer';
 import { useCartStore } from '../store/cartStore';
 import { Order, orderService, generateWhatsAppLink } from '../lib/orders';
 import { couponService } from '../lib/settings';
+import { useDialog } from '../context/DialogContext';
 
 const Checkout: React.FC = () => {
+    const { error } = useDialog();
     const navigate = useNavigate();
     const { items, total, clearCart } = useCartStore();
     const [loading, setLoading] = useState(false);
@@ -102,9 +104,9 @@ const Checkout: React.FC = () => {
 
             // Navigate to success page
             navigate('/');
-        } catch (error) {
-            console.error('Error creating order:', error);
-            alert('Erro ao finalizar pedido. Tente novamente.');
+        } catch (err) {
+            console.error('Error creating order:', err);
+            await error('Erro ao finalizar pedido. Tente novamente.');
         } finally {
             setLoading(false);
         }

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { reviewsService } from '../../lib/reviews';
 import type { ProductReview } from '../../types';
+import { useDialog } from '../../context/DialogContext';
 
 const AdminReviews: React.FC = () => {
+    const { error, confirm } = useDialog();
     const [reviews, setReviews] = useState<(ProductReview & { product: { name: string; image_url: string } })[]>([]);
     const [pendingCount, setPendingCount] = useState(0);
     const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'featured'>('all');
@@ -45,19 +47,20 @@ const AdminReviews: React.FC = () => {
         try {
             await reviewsService.approveReview(id);
             loadData();
-        } catch (error) {
-            alert('Erro ao aprovar avaliação');
+        } catch (err) {
+            await error('Erro ao aprovar avaliação');
         }
     };
 
     const handleReject = async (id: string) => {
-        if (!confirm('Tem certeza que deseja rejeitar esta avaliação?')) return;
+        const ok = await confirm('Tem certeza que deseja rejeitar esta avaliação?', 'Rejeitar Avaliação');
+        if (!ok) return;
 
         try {
             await reviewsService.rejectReview(id);
             loadData();
-        } catch (error) {
-            alert('Erro ao rejeitar avaliação');
+        } catch (err) {
+            await error('Erro ao rejeitar avaliação');
         }
     };
 
@@ -65,8 +68,8 @@ const AdminReviews: React.FC = () => {
         try {
             await reviewsService.featureReview(id, featured);
             loadData();
-        } catch (error) {
-            alert('Erro ao atualizar destaque');
+        } catch (err) {
+            await error('Erro ao atualizar destaque');
         }
     };
 
@@ -80,8 +83,8 @@ const AdminReviews: React.FC = () => {
             setSelectedReview(null);
             setReplyText('');
             loadData();
-        } catch (error) {
-            alert('Erro ao enviar resposta');
+        } catch (err) {
+            await error('Erro ao enviar resposta');
         }
     };
 

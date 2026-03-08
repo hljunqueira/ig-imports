@@ -15,7 +15,7 @@ export const inventoryService = {
 
     async createStockMovement(movement: Omit<StockMovement, 'id' | 'created_at'>): Promise<StockMovement> {
         const response = await apiClient.post<{ success: boolean; data: StockMovement }>('/inventory/movements', movement);
-        if (!response.success) throw new Error('Failed to create stock movement');
+        if (!response.success) throw new Error('Erro ao registrar movimentação de estoque');
         return response.data;
     },
 
@@ -46,13 +46,13 @@ export const inventoryService = {
 
     async createSupplier(supplier: Omit<Supplier, 'id' | 'created_at' | 'updated_at'>): Promise<Supplier> {
         const response = await apiClient.post<{ success: boolean; data: Supplier }>('/inventory/suppliers', supplier);
-        if (!response.success) throw new Error('Failed to create supplier');
+        if (!response.success) throw new Error('Erro ao criar fornecedor');
         return response.data;
     },
 
     async updateSupplier(id: string, updates: Partial<Supplier>): Promise<Supplier> {
         const response = await apiClient.put<{ success: boolean; data: Supplier }>(`/inventory/suppliers/${id}`, updates);
-        if (!response.success) throw new Error('Failed to update supplier');
+        if (!response.success) throw new Error('Erro ao atualizar fornecedor');
         return response.data;
     },
 
@@ -74,13 +74,13 @@ export const inventoryService = {
 
     async createPurchaseOrder(order: Omit<PurchaseOrder, 'id' | 'created_at' | 'updated_at'>, items: Omit<PurchaseOrderItem, 'id' | 'created_at'>[]): Promise<PurchaseOrder> {
         const response = await apiClient.post<{ success: boolean; data: PurchaseOrder }>('/inventory/purchase-orders', { order, items });
-        if (!response.success) throw new Error('Failed to create purchase order');
+        if (!response.success) throw new Error('Erro ao criar pedido de compra');
         return response.data;
     },
 
     async updatePurchaseOrderStatus(id: string, status: PurchaseOrder['status'], actualDelivery?: string): Promise<PurchaseOrder> {
         const response = await apiClient.put<{ success: boolean; data: PurchaseOrder }>(`/inventory/purchase-orders/${id}/status`, { status, actualDelivery });
-        if (!response.success) throw new Error('Failed to update purchase order status');
+        if (!response.success) throw new Error('Erro ao atualizar status do pedido de compra');
         return response.data;
     },
 

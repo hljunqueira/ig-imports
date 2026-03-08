@@ -12,6 +12,7 @@ import CartDrawer from './components/CartDrawer';
 import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAuthStore } from './store/authStore';
+import { DialogProvider } from './context/DialogContext';
 
 const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '554896231041';
 
@@ -114,9 +115,11 @@ const App: React.FC = () => {
 
   return (
     <HashRouter>
-      <AnimatedRoutes />
-      <CartDrawer />
-      <WhatsAppButton />
+      <DialogProvider>
+        <AnimatedRoutes />
+        <CartDrawer />
+        <WhatsAppButton />
+      </DialogProvider>
     </HashRouter>
   );
 };

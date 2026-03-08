@@ -38,7 +38,7 @@ export const getOrders = async (req: Request, res: Response): Promise<void> => {
         res.json({ success: true, data: result.rows });
     } catch (error) {
         console.error('Error fetching orders:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch orders' });
+        res.status(500).json({ success: false, error: 'Erro ao buscar pedidos' });
     }
 };
 
@@ -51,7 +51,7 @@ export const getOrderById = async (req: Request, res: Response): Promise<void> =
         const orderResult = await query('SELECT * FROM orders WHERE id = $1', [id]);
         
         if (orderResult.rows.length === 0) {
-            res.status(404).json({ success: false, error: 'Order not found' });
+            res.status(404).json({ success: false, error: 'Pedido não encontrado' });
             return;
         }
 
@@ -91,7 +91,7 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
         } = req.body;
 
         if (!items || items.length === 0) {
-            res.status(400).json({ success: false, error: 'Order must have at least one item' });
+            res.status(400).json({ success: false, error: 'O pedido deve ter pelo menos um item' });
             return;
         }
 
@@ -140,7 +140,7 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
         res.status(201).json({ success: true, data: result });
     } catch (error) {
         console.error('Error creating order:', error);
-        res.status(500).json({ success: false, error: 'Failed to create order' });
+        res.status(500).json({ success: false, error: 'Erro ao criar pedido' });
     }
 };
 
@@ -165,7 +165,7 @@ export const updateOrderStatus = async (req: Request, res: Response): Promise<vo
         }
 
         if (updates.length === 0) {
-            res.status(400).json({ success: false, error: 'No status to update' });
+            res.status(400).json({ success: false, error: 'Nenhum status para atualizar' });
             return;
         }
 
@@ -175,14 +175,14 @@ export const updateOrderStatus = async (req: Request, res: Response): Promise<vo
         const result = await query(sql, values);
 
         if (result.rows.length === 0) {
-            res.status(404).json({ success: false, error: 'Order not found' });
+            res.status(404).json({ success: false, error: 'Pedido não encontrado' });
             return;
         }
 
         res.json({ success: true, data: result.rows[0] });
     } catch (error) {
         console.error('Error updating order:', error);
-        res.status(500).json({ success: false, error: 'Failed to update order' });
+        res.status(500).json({ success: false, error: 'Erro ao atualizar pedido' });
     }
 };
 
@@ -206,10 +206,10 @@ export const deleteOrder = async (req: Request, res: Response): Promise<void> =>
             await client.query('DELETE FROM orders WHERE id = $1', [id]);
         });
 
-        res.json({ success: true, message: 'Order deleted successfully' });
+        res.json({ success: true, message: 'Pedido excluído com sucesso' });
     } catch (error) {
         console.error('Error deleting order:', error);
-        res.status(500).json({ success: false, error: 'Failed to delete order' });
+        res.status(500).json({ success: false, error: 'Erro ao excluir pedido' });
     }
 };
 
@@ -245,6 +245,6 @@ export const getOrderStats = async (req: Request, res: Response): Promise<void> 
         res.json({ success: true, data: result.rows[0] });
     } catch (error) {
         console.error('Error fetching order stats:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch order stats' });
+        res.status(500).json({ success: false, error: 'Erro ao buscar estatísticas de pedidos' });
     }
 };

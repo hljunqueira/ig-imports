@@ -17,7 +17,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         );
 
         if (result.rows.length === 0) {
-            res.status(401).json({ success: false, error: 'Invalid credentials' });
+            res.status(401).json({ success: false, error: 'Credenciais inválidas' });
             return;
         }
 
@@ -43,7 +43,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         });
     } catch (error) {
         console.error('Error logging in:', error);
-        res.status(500).json({ success: false, error: 'Failed to login' });
+        res.status(500).json({ success: false, error: 'Erro ao fazer login' });
     }
 };
 
@@ -51,7 +51,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 export const getCurrentUser = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
         if (!req.user) {
-            res.status(401).json({ success: false, error: 'Not authenticated' });
+            res.status(401).json({ success: false, error: 'Não autenticado' });
             return;
         }
 
@@ -64,7 +64,7 @@ export const getCurrentUser = async (req: AuthRequest, res: Response): Promise<v
         );
 
         if (result.rows.length === 0) {
-            res.status(404).json({ success: false, error: 'User not found' });
+            res.status(404).json({ success: false, error: 'Usuário não encontrado' });
             return;
         }
 
@@ -80,7 +80,7 @@ export const getCurrentUser = async (req: AuthRequest, res: Response): Promise<v
         });
     } catch (error) {
         console.error('Error fetching user:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch user' });
+        res.status(500).json({ success: false, error: 'Erro ao buscar usuário' });
     }
 };
 
@@ -93,20 +93,20 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
         res.status(201).json({
             success: true,
-            message: 'User registered successfully',
+            message: 'Usuário registrado com sucesso',
         });
     } catch (error) {
         console.error('Error registering user:', error);
-        res.status(500).json({ success: false, error: 'Failed to register user' });
+        res.status(500).json({ success: false, error: 'Erro ao registrar usuário' });
     }
 };
 
 // Change password
 export const changePassword = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-        res.json({ success: true, message: 'Password changed successfully' });
+        res.json({ success: true, message: 'Senha alterada com sucesso' });
     } catch (error) {
         console.error('Error changing password:', error);
-        res.status(500).json({ success: false, error: 'Failed to change password' });
+        res.status(500).json({ success: false, error: 'Erro ao alterar senha' });
     }
 };
