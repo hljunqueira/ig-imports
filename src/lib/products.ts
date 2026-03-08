@@ -151,7 +151,7 @@ export const productService = {
         formData.append('folder', folder);
         const token = localStorage.getItem('token');
         const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-        const response = await fetch(`${API_URL}/upload`, {
+        const response = await fetch(`${API_URL}/upload?folder=${encodeURIComponent(folder)}`, {
             method: 'POST',
             headers: token ? { Authorization: `Bearer ${token}` } : {},
             body: formData,

@@ -36,9 +36,11 @@ if (!fs.existsSync(uploadsDir)) {
 }
 
 // Multer config for image uploads
+// Nota: folder vem da query string pois req.body ainda não está disponível no diskStorage
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const folder = (req.body.folder || 'general') as string;
+        const folder = ((req.query.folder || req.body.folder || 'general') as string)
+            .replace(/[^a-z0-9_-]/gi, ''); // sanitiza
         const uploadPath = path.join(uploadsDir, folder);
         if (!fs.existsSync(uploadPath)) {
             fs.mkdirSync(uploadPath, { recursive: true });
