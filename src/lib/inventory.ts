@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { apiClient } from './api';
 import type { StockMovement, Supplier, PurchaseOrder, PurchaseOrderItem } from '../types';
 
 // ========================================
@@ -7,75 +7,24 @@ import type { StockMovement, Supplier, PurchaseOrder, PurchaseOrderItem } from '
 
 export const inventoryService = {
     // Movimentações de Estoque
-    async getStockMovements(productId?: string) {
-        let query = supabase
-            .from('stock_movements')
-            .select('*, product:products(name, image_url)')
-            .order('created_at', { ascending: false });
-
-        if (productId) query = query.eq('product_id', productId);
-
-        const { data, error } = await query;
-        return { data: data as (StockMovement & { product: { name: string; image_url: string } })[] | null, error };
+    async getStockMovements(productId?: string): Promise<StockMovement[]> {
+        const params = productId ? `?productId=${productId}` : '';
+        const response = await apiClient.get<{ success: boolean; data: StockMovement[] }>(`/inventory/movements${params}`);
+        return response.success ? response.data : [];
     },
 
-    async createStockMovement(movement: Omit<StockMovement, 'id' | 'created_at'>) {
-        // Get current stock
-        const { data: product } = await supabase
-            .from('products')
-            .select('stock')
-            .eq('id', movement.product_id)
-            .single();
-
-        if (!product) return { data: null, error: { message: 'Product not found' } };
-
-        const previousStock = product.stock || 0;
-        let newStock = previousStock;
-
-        // Calculate new stock based on movement type
-        switch (movement.movement_type) {
-            case 'in':
-            case 'return':
-                newStock = previousStock + movement.quantity;
-                break;
-            case 'out':
-                newStock = previousStock - movement.quantity;
-                break;
-            case 'adjustment':
-                newStock = movement.quantity; // Direct set
-                break;
-        }
-
-        // Create movement record
-        const { data: movementData, error: movementError } = await supabase
-            .from('stock_movements')
-            .insert({
-                ...movement,
-                previous_stock: previousStock,
-                new_stock: newStock,
-            })
-            .select()
-            .single();
-
-        if (movementError) return { data: null, error: movementError };
-
-        // Update product stock
-        const { error: updateError } = await supabase
-            .from('products')
-            .update({ stock: newStock })
-            .eq('id', movement.product_id);
-
-        if (updateError) return { data: null, error: updateError };
-
-        return { data: movementData as StockMovement, error: null };
+    async createStockMovement(movement: Omit<StockMovement, 'id' | 'created_at'>): Promise<StockMovement> {
+        const response = await apiClient.post<{ success: boolean; data: StockMovement }>('/inventory/movements', movement);
+        if (!response.success) throw new Error('Failed to create stock movement');
+        return response.data;
     },
 
-    async adjustStock(productId: string, newStock: number, reason: string, createdBy?: string) {
+    async adjustStock(productId: string, newStock: number, reason: string, createdBy?: string): Promise<StockMovement> {
         return this.createStockMovement({
             product_id: productId,
             movement_type: 'adjustment',
             quantity: newStock,
-            previous_stock: 0, // Will be calculated
+            previous_stock: 0,
             new_stock: newStock,
             reason,
             created_by: createdBy,
@@ -84,151 +33,60 @@ export const inventoryService = {
 
     // Produtos com Estoque Baixo
     async getLowStockProducts() {
-        const { data, error } = await supabase
-            .from('products')
-            .select('*')
-            .lt('stock', 5) // Default threshold, can be customized
-            .eq('status', 'active')
-            .order('stock', { ascending: true });
-
-        return { data, error };
+        const response = await apiClient.get<{ success: boolean; data: any[] }>('/inventory/low-stock');
+        return response.success ? response.data : [];
     },
 
     // Fornecedores
-    async getSuppliers(activeOnly = true) {
-        let query = supabase.from('suppliers').select('*').order('name');
-
-        if (activeOnly) query = query.eq('is_active', true);
-
-        const { data, error } = await query;
-        return { data: data as Supplier[] | null, error };
+    async getSuppliers(activeOnly = true): Promise<Supplier[]> {
+        const params = activeOnly ? '?active=true' : '';
+        const response = await apiClient.get<{ success: boolean; data: Supplier[] }>(`/suppliers${params}`);
+        return response.success ? response.data : [];
     },
 
-    async createSupplier(supplier: Omit<Supplier, 'id' | 'created_at' | 'updated_at'>) {
-        const { data, error } = await supabase
-            .from('suppliers')
-            .insert(supplier)
-            .select()
-            .single();
-        return { data: data as Supplier | null, error };
+    async createSupplier(supplier: Omit<Supplier, 'id' | 'created_at' | 'updated_at'>): Promise<Supplier> {
+        const response = await apiClient.post<{ success: boolean; data: Supplier }>('/suppliers', supplier);
+        if (!response.success) throw new Error('Failed to create supplier');
+        return response.data;
     },
 
-    async updateSupplier(id: string, updates: Partial<Supplier>) {
-        const { data, error } = await supabase
-            .from('suppliers')
-            .update(updates)
-            .eq('id', id)
-            .select()
-            .single();
-        return { data: data as Supplier | null, error };
+    async updateSupplier(id: string, updates: Partial<Supplier>): Promise<Supplier> {
+        const response = await apiClient.put<{ success: boolean; data: Supplier }>(`/suppliers/${id}`, updates);
+        if (!response.success) throw new Error('Failed to update supplier');
+        return response.data;
     },
 
     // Pedidos de Compra
-    async getPurchaseOrders(status?: string) {
-        let query = supabase
-            .from('purchase_orders')
-            .select('*, supplier:suppliers(name), items:purchase_order_items(*, product:products(name, image_url))')
-            .order('created_at', { ascending: false });
-
-        if (status) query = query.eq('status', status);
-
-        const { data, error } = await query;
-        return { data: data as PurchaseOrder[] | null, error };
+    async getPurchaseOrders(status?: string): Promise<PurchaseOrder[]> {
+        const params = status ? `?status=${status}` : '';
+        const response = await apiClient.get<{ success: boolean; data: PurchaseOrder[] }>(`/purchase-orders${params}`);
+        return response.success ? response.data : [];
     },
 
-    async getPurchaseOrderById(id: string) {
-        const { data, error } = await supabase
-            .from('purchase_orders')
-            .select('*, supplier:suppliers(*), items:purchase_order_items(*, product:products(*))')
-            .eq('id', id)
-            .single();
-
-        return { data: data as PurchaseOrder | null, error };
-    },
-
-    async createPurchaseOrder(order: Omit<PurchaseOrder, 'id' | 'created_at' | 'updated_at'>, items: Omit<PurchaseOrderItem, 'id' | 'created_at'>[]) {
-        // Calculate total
-        const totalAmount = items.reduce((sum, item) => sum + item.total_cost, 0);
-
-        // Create order
-        const { data: orderData, error: orderError } = await supabase
-            .from('purchase_orders')
-            .insert({ ...order, total_amount: totalAmount })
-            .select()
-            .single();
-
-        if (orderError) return { data: null, error: orderError };
-
-        // Create items
-        const itemsWithOrderId = items.map((item) => ({
-            ...item,
-            purchase_order_id: orderData.id,
-        }));
-
-        const { error: itemsError } = await supabase.from('purchase_order_items').insert(itemsWithOrderId);
-
-        if (itemsError) return { data: null, error: itemsError };
-
-        return { data: orderData as PurchaseOrder, error: null };
-    },
-
-    async updatePurchaseOrderStatus(id: string, status: PurchaseOrder['status'], actualDelivery?: string) {
-        const updates: Partial<PurchaseOrder> = { status };
-        if (actualDelivery) updates.actual_delivery = actualDelivery;
-
-        const { data, error } = await supabase
-            .from('purchase_orders')
-            .update(updates)
-            .eq('id', id)
-            .select()
-            .single();
-
-        // If received, update stock
-        if (status === 'received') {
-            const { data: order } = await supabase
-                .from('purchase_orders')
-                .select('items:purchase_order_items(*)')
-                .eq('id', id)
-                .single();
-
-            if (order?.items) {
-                for (const item of order.items) {
-                    await this.createStockMovement({
-                        product_id: item.product_id,
-                        movement_type: 'in',
-                        quantity: item.quantity,
-                        previous_stock: 0,
-                        new_stock: 0,
-                        reason: `Recebimento do pedido de compra #${id}`,
-                    });
-                }
-            }
+    async getPurchaseOrderById(id: string): Promise<PurchaseOrder | null> {
+        try {
+            const response = await apiClient.get<{ success: boolean; data: PurchaseOrder }>(`/purchase-orders/${id}`);
+            return response.success ? response.data : null;
+        } catch {
+            return null;
         }
+    },
 
-        return { data: data as PurchaseOrder | null, error };
+    async createPurchaseOrder(order: Omit<PurchaseOrder, 'id' | 'created_at' | 'updated_at'>, items: Omit<PurchaseOrderItem, 'id' | 'created_at'>[]): Promise<PurchaseOrder> {
+        const response = await apiClient.post<{ success: boolean; data: PurchaseOrder }>('/purchase-orders', { order, items });
+        if (!response.success) throw new Error('Failed to create purchase order');
+        return response.data;
+    },
+
+    async updatePurchaseOrderStatus(id: string, status: PurchaseOrder['status'], actualDelivery?: string): Promise<PurchaseOrder> {
+        const response = await apiClient.patch<{ success: boolean; data: PurchaseOrder }>(`/purchase-orders/${id}/status`, { status, actualDelivery });
+        if (!response.success) throw new Error('Failed to update purchase order status');
+        return response.data;
     },
 
     // Estatísticas
     async getInventoryStats() {
-        const { data: products, error } = await supabase.from('products').select('stock, status, min_stock');
-
-        if (error) return { data: null, error };
-
-        const stats = {
-            totalProducts: products?.length || 0,
-            activeProducts: 0,
-            lowStock: 0,
-            outOfStock: 0,
-            totalStock: 0,
-        };
-
-        products?.forEach((p) => {
-            if (p.status === 'active') stats.activeProducts++;
-            if (p.stock === 0) stats.outOfStock++;
-            else if (p.stock <= (p.min_stock || 5)) stats.lowStock++;
-            stats.totalStock += p.stock || 0;
-        });
-
-        return { data: stats, error: null };
+        const response = await apiClient.get<{ success: boolean; data: { totalProducts: number; activeProducts: number; lowStock: number; outOfStock: number; totalStock: number } }>('/inventory/stats');
+        return response.success ? response.data : { totalProducts: 0, activeProducts: 0, lowStock: 0, outOfStock: 0, totalStock: 0 };
     },
 };

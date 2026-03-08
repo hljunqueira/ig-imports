@@ -27,12 +27,12 @@ const AdminRequests: React.FC = () => {
         setIsLoading(true);
         try {
             const statusFilter = filter === 'all' ? undefined : filter;
-            const [requestsRes, statsRes] = await Promise.all([
+            const [requestsData, statsData] = await Promise.all([
                 requestsService.getRequests(statusFilter ? { status: statusFilter } : undefined),
                 requestsService.getRequestStats(),
             ]);
-            if (requestsRes.data) setRequests(requestsRes.data);
-            if (statsRes.data) setStats(statsRes.data);
+            setRequests(requestsData);
+            setStats(statsData);
         } catch (error) {
             console.error('Error loading requests:', error);
         }
@@ -110,18 +110,17 @@ const AdminRequests: React.FC = () => {
         // TODO: Get current user ID from auth
         const adminId = 'current-user-id';
 
-        const { error } = await requestsService.updateRequest(selectedRequest.id, {
-            quoted_price: price,
-            admin_notes: adminNotes,
-            status: 'quoted',
-        });
-
-        if (error) {
+        try {
+            await requestsService.updateRequest(selectedRequest.id, {
+                quoted_price: price,
+                admin_notes: adminNotes,
+                status: 'quoted',
+            });
+            await requestsService.updateStatus(selectedRequest.id, 'quoted', adminId, `Orçamento: ${formatCurrency(price)}`);
+        } catch (error) {
             alert('Erro ao enviar orçamento');
             return;
         }
-
-        await requestsService.updateStatus(selectedRequest.id, 'quoted', adminId, `Orçamento: ${formatCurrency(price)}`);
 
         setShowModal(false);
         setSelectedRequest(null);
@@ -133,14 +132,12 @@ const AdminRequests: React.FC = () => {
     const handleStatusChange = async (requestId: string, newStatus: ProductRequest['status']) => {
         // TODO: Get current user ID from auth
         const adminId = 'current-user-id';
-        const { error } = await requestsService.updateStatus(requestId, newStatus, adminId);
-
-        if (error) {
+        try {
+            await requestsService.updateStatus(requestId, newStatus, adminId);
+            loadData();
+        } catch (error) {
             alert('Erro ao atualizar status');
-            return;
         }
-
-        loadData();
     };
 
     return (

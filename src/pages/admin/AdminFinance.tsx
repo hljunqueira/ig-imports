@@ -20,20 +20,20 @@ const AdminFinance: React.FC = () => {
         setIsLoading(true);
         try {
             if (activeTab === 'overview' || activeTab === 'transactions') {
-                const [transRes, summaryRes] = await Promise.all([
+                const [transData, summaryData] = await Promise.all([
                     financeService.getTransactions(),
                     financeService.getFinancialSummary(),
                 ]);
-                if (transRes.data) setTransactions(transRes.data);
-                if (summaryRes.data) setSummary(summaryRes.data);
+                setTransactions(transData);
+                setSummary(summaryData);
             }
             if (activeTab === 'receivable' || activeTab === 'overview') {
-                const res = await financeService.getAccountsReceivable();
-                if (res.data) setReceivables(res.data);
+                const data = await financeService.getAccountsReceivable();
+                setReceivables(data);
             }
             if (activeTab === 'payable' || activeTab === 'overview') {
-                const res = await financeService.getAccountsPayable();
-                if (res.data) setPayables(res.data);
+                const data = await financeService.getAccountsPayable();
+                setPayables(data);
             }
         } catch (error) {
             console.error('Error loading finance data:', error);

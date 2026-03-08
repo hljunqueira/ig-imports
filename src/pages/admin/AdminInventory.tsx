@@ -24,20 +24,20 @@ const AdminInventory: React.FC = () => {
         setIsLoading(true);
         try {
             if (activeTab === 'overview' || activeTab === 'movements') {
-                const res = await inventoryService.getStockMovements();
-                if (res.data) setMovements(res.data);
+                const data = await inventoryService.getStockMovements();
+                setMovements(data as any);
             }
             if (activeTab === 'overview' || activeTab === 'suppliers') {
-                const res = await inventoryService.getSuppliers();
-                if (res.data) setSuppliers(res.data);
+                const data = await inventoryService.getSuppliers();
+                setSuppliers(data);
             }
             if (activeTab === 'overview' || activeTab === 'lowstock') {
-                const res = await inventoryService.getLowStockProducts();
-                if (res.data) setLowStockProducts(res.data);
+                const data = await inventoryService.getLowStockProducts();
+                setLowStockProducts(data as any);
             }
             if (activeTab === 'overview') {
-                const res = await inventoryService.getInventoryStats();
-                if (res.data) setStats(res.data);
+                const data = await inventoryService.getInventoryStats();
+                setStats(data);
             }
         } catch (error) {
             console.error('Error loading inventory data:', error);

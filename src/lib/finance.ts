@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { apiClient } from './api';
 import type {
     FinancialTransaction,
     AccountReceivable,
@@ -12,171 +12,81 @@ import type {
 
 export const financeService = {
     // Transações
-    async getTransactions(filters?: { type?: string; startDate?: string; endDate?: string }) {
-        let query = supabase
-            .from('financial_transactions')
-            .select('*')
-            .order('transaction_date', { ascending: false });
-
-        if (filters?.type) {
-            query = query.eq('transaction_type', filters.type);
-        }
-        if (filters?.startDate) {
-            query = query.gte('transaction_date', filters.startDate);
-        }
-        if (filters?.endDate) {
-            query = query.lte('transaction_date', filters.endDate);
-        }
-
-        const { data, error } = await query;
-        return { data: data as FinancialTransaction[] | null, error };
+    async getTransactions(filters?: { type?: string; startDate?: string; endDate?: string }): Promise<FinancialTransaction[]> {
+        const params = new URLSearchParams();
+        if (filters?.type) params.append('type', filters.type);
+        if (filters?.startDate) params.append('startDate', filters.startDate);
+        if (filters?.endDate) params.append('endDate', filters.endDate);
+        
+        const query = params.toString() ? `?${params.toString()}` : '';
+        const response = await apiClient.get<{ success: boolean; data: FinancialTransaction[] }>(`/finance/transactions${query}`);
+        return response.success ? response.data : [];
     },
 
-    async createTransaction(transaction: Omit<FinancialTransaction, 'id' | 'created_at' | 'updated_at'>) {
-        const { data, error } = await supabase
-            .from('financial_transactions')
-            .insert(transaction)
-            .select()
-            .single();
-        return { data: data as FinancialTransaction | null, error };
+    async createTransaction(transaction: Omit<FinancialTransaction, 'id' | 'created_at' | 'updated_at'>): Promise<FinancialTransaction> {
+        const response = await apiClient.post<{ success: boolean; data: FinancialTransaction }>('/finance/transactions', transaction);
+        if (!response.success) throw new Error('Failed to create transaction');
+        return response.data;
     },
 
     async getFinancialSummary(startDate?: string, endDate?: string) {
-        let query = supabase.from('financial_transactions').select('transaction_type, amount');
-
-        if (startDate) query = query.gte('transaction_date', startDate);
-        if (endDate) query = query.lte('transaction_date', endDate);
-
-        const { data, error } = await query;
-
-        if (error) return { data: null, error };
-
-        const summary = {
-            income: 0,
-            expense: 0,
-            refund: 0,
-            balance: 0,
-        };
-
-        data?.forEach((t) => {
-            if (t.transaction_type === 'income') summary.income += Number(t.amount);
-            if (t.transaction_type === 'expense') summary.expense += Number(t.amount);
-            if (t.transaction_type === 'refund') summary.refund += Number(t.amount);
-        });
-
-        summary.balance = summary.income - summary.expense - summary.refund;
-
-        return { data: summary, error: null };
+        const params = new URLSearchParams();
+        if (startDate) params.append('startDate', startDate);
+        if (endDate) params.append('endDate', endDate);
+        
+        const query = params.toString() ? `?${params.toString()}` : '';
+        const response = await apiClient.get<{ success: boolean; data: { income: number; expense: number; refund: number; balance: number } }>(`/finance/summary${query}`);
+        return response.success ? response.data : { income: 0, expense: 0, refund: 0, balance: 0 };
     },
 
     // Contas a Receber
-    async getAccountsReceivable(status?: string) {
-        let query = supabase
-            .from('accounts_receivable')
-            .select('*')
-            .order('due_date', { ascending: true });
-
-        if (status) query = query.eq('status', status);
-
-        const { data, error } = await query;
-        return { data: data as AccountReceivable[] | null, error };
+    async getAccountsReceivable(status?: string): Promise<AccountReceivable[]> {
+        const params = status ? `?status=${status}` : '';
+        const response = await apiClient.get<{ success: boolean; data: AccountReceivable[] }>(`/finance/receivables${params}`);
+        return response.success ? response.data : [];
     },
 
-    async createAccountReceivable(account: Omit<AccountReceivable, 'id' | 'created_at' | 'updated_at'>) {
-        const { data, error } = await supabase
-            .from('accounts_receivable')
-            .insert(account)
-            .select()
-            .single();
-        return { data: data as AccountReceivable | null, error };
+    async createAccountReceivable(account: Omit<AccountReceivable, 'id' | 'created_at' | 'updated_at'>): Promise<AccountReceivable> {
+        const response = await apiClient.post<{ success: boolean; data: AccountReceivable }>('/finance/receivables', account);
+        if (!response.success) throw new Error('Failed to create account receivable');
+        return response.data;
     },
 
-    async receivePayment(id: string, amount: number) {
-        const { data: account } = await supabase
-            .from('accounts_receivable')
-            .select('*')
-            .eq('id', id)
-            .single();
-
-        if (!account) return { data: null, error: { message: 'Account not found' } };
-
-        const newAmountPaid = Number(account.amount_paid) + amount;
-        const newStatus = newAmountPaid >= Number(account.amount) ? 'paid' : 'partial';
-
-        const { data, error } = await supabase
-            .from('accounts_receivable')
-            .update({ amount_paid: newAmountPaid, status: newStatus })
-            .eq('id', id)
-            .select()
-            .single();
-
-        return { data: data as AccountReceivable | null, error };
+    async receivePayment(id: string, amount: number): Promise<AccountReceivable> {
+        const response = await apiClient.patch<{ success: boolean; data: AccountReceivable }>(`/finance/receivables/${id}/payment`, { amount });
+        if (!response.success) throw new Error('Failed to receive payment');
+        return response.data;
     },
 
     // Contas a Pagar
-    async getAccountsPayable(status?: string) {
-        let query = supabase
-            .from('accounts_payable')
-            .select('*')
-            .order('due_date', { ascending: true });
-
-        if (status) query = query.eq('status', status);
-
-        const { data, error } = await query;
-        return { data: data as AccountPayable[] | null, error };
+    async getAccountsPayable(status?: string): Promise<AccountPayable[]> {
+        const params = status ? `?status=${status}` : '';
+        const response = await apiClient.get<{ success: boolean; data: AccountPayable[] }>(`/finance/payables${params}`);
+        return response.success ? response.data : [];
     },
 
-    async createAccountPayable(account: Omit<AccountPayable, 'id' | 'created_at' | 'updated_at'>) {
-        const { data, error } = await supabase
-            .from('accounts_payable')
-            .insert(account)
-            .select()
-            .single();
-        return { data: data as AccountPayable | null, error };
+    async createAccountPayable(account: Omit<AccountPayable, 'id' | 'created_at' | 'updated_at'>): Promise<AccountPayable> {
+        const response = await apiClient.post<{ success: boolean; data: AccountPayable }>('/finance/payables', account);
+        if (!response.success) throw new Error('Failed to create account payable');
+        return response.data;
     },
 
-    async makePayment(id: string, amount: number) {
-        const { data: account } = await supabase
-            .from('accounts_payable')
-            .select('*')
-            .eq('id', id)
-            .single();
-
-        if (!account) return { data: null, error: { message: 'Account not found' } };
-
-        const newAmountPaid = Number(account.amount_paid) + amount;
-        const newStatus = newAmountPaid >= Number(account.amount) ? 'paid' : 'partial';
-
-        const { data, error } = await supabase
-            .from('accounts_payable')
-            .update({ amount_paid: newAmountPaid, status: newStatus })
-            .eq('id', id)
-            .select()
-            .single();
-
-        return { data: data as AccountPayable | null, error };
+    async makePayment(id: string, amount: number): Promise<AccountPayable> {
+        const response = await apiClient.patch<{ success: boolean; data: AccountPayable }>(`/finance/payables/${id}/payment`, { amount });
+        if (!response.success) throw new Error('Failed to make payment');
+        return response.data;
     },
 
     // Categorias
-    async getFinancialCategories(type?: 'income' | 'expense') {
-        let query = supabase
-            .from('financial_categories')
-            .select('*')
-            .eq('is_active', true)
-            .order('name');
-
-        if (type) query = query.eq('type', type);
-
-        const { data, error } = await query;
-        return { data: data as FinancialCategory[] | null, error };
+    async getFinancialCategories(type?: 'income' | 'expense'): Promise<FinancialCategory[]> {
+        const params = type ? `?type=${type}` : '';
+        const response = await apiClient.get<{ success: boolean; data: FinancialCategory[] }>(`/finance/categories${params}`);
+        return response.success ? response.data : [];
     },
 
-    async createCategory(category: Omit<FinancialCategory, 'id' | 'created_at'>) {
-        const { data, error } = await supabase
-            .from('financial_categories')
-            .insert(category)
-            .select()
-            .single();
-        return { data: data as FinancialCategory | null, error };
+    async createCategory(category: Omit<FinancialCategory, 'id' | 'created_at'>): Promise<FinancialCategory> {
+        const response = await apiClient.post<{ success: boolean; data: FinancialCategory }>('/finance/categories', category);
+        if (!response.success) throw new Error('Failed to create category');
+        return response.data;
     },
 };

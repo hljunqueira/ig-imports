@@ -24,17 +24,13 @@ const AdminReviews: React.FC = () => {
 
             const featured = filter === 'featured' ? true : undefined;
 
-            const [reviewsRes, pendingRes] = await Promise.all([
+            const [reviewsData, pendingData] = await Promise.all([
                 reviewsService.getReviews({ approved, featured }),
                 reviewsService.getPendingReviews(),
             ]);
 
-            if (reviewsRes.data) {
-                setReviews(reviewsRes.data as (ProductReview & { product: { name: string; image_url: string } })[]);
-            }
-            if (pendingRes.data) {
-                setPendingCount(pendingRes.data.length);
-            }
+            setReviews(reviewsData as (ProductReview & { product: { name: string; image_url: string } })[]);
+            setPendingCount(pendingData.length);
         } catch (error) {
             console.error('Error loading reviews:', error);
         }
@@ -46,32 +42,32 @@ const AdminReviews: React.FC = () => {
     };
 
     const handleApprove = async (id: string) => {
-        const { error } = await reviewsService.approveReview(id);
-        if (error) {
+        try {
+            await reviewsService.approveReview(id);
+            loadData();
+        } catch (error) {
             alert('Erro ao aprovar avaliação');
-            return;
         }
-        loadData();
     };
 
     const handleReject = async (id: string) => {
         if (!confirm('Tem certeza que deseja rejeitar esta avaliação?')) return;
 
-        const { error } = await reviewsService.rejectReview(id);
-        if (error) {
+        try {
+            await reviewsService.rejectReview(id);
+            loadData();
+        } catch (error) {
             alert('Erro ao rejeitar avaliação');
-            return;
         }
-        loadData();
     };
 
     const handleFeature = async (id: string, featured: boolean) => {
-        const { error } = await reviewsService.featureReview(id, featured);
-        if (error) {
+        try {
+            await reviewsService.featureReview(id, featured);
+            loadData();
+        } catch (error) {
             alert('Erro ao atualizar destaque');
-            return;
         }
-        loadData();
     };
 
     const handleReply = async () => {
@@ -80,21 +76,20 @@ const AdminReviews: React.FC = () => {
         // TODO: Get current user ID from auth
         const adminId = 'current-user-id';
 
-        const { error } = await reviewsService.addReply({
-            review_id: selectedReview.id,
-            reply_text: replyText,
-            replied_by: adminId,
-        });
+        try {
+            await reviewsService.addReply({
+                review_id: selectedReview.id,
+                reply_text: replyText,
+                replied_by: adminId,
+            });
 
-        if (error) {
+            setShowReplyModal(false);
+            setSelectedReview(null);
+            setReplyText('');
+            loadData();
+        } catch (error) {
             alert('Erro ao enviar resposta');
-            return;
         }
-
-        setShowReplyModal(false);
-        setSelectedReview(null);
-        setReplyText('');
-        loadData();
     };
 
     const renderStars = (rating: number) => {
