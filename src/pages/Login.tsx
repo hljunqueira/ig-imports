@@ -112,7 +112,7 @@ const Login: React.FC = () => {
         </form>
 
         <div className="mt-8 text-center">
-          <p className="text-[9px] text-gray-700 uppercase tracking-widest">© 2024 IG Imports Security System</p>
+          <p className="text-[9px] text-gray-700 uppercase tracking-widest">© 2026 IG IMPORTS</p>
         </div>
       </div>
     </div>
