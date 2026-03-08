@@ -19,7 +19,7 @@ export const authService = {
     async login({ email, password }: LoginCredentials): Promise<AuthUser | null> {
         console.log('[AUTH] Tentando login para:', email);
         
-        const response = await apiClient.post<{ success: boolean; token: string; user: AuthUser }>('/auth/login', {
+        const response = await apiClient.post<{ success: boolean; data: { token: string; user: AuthUser } }>('/auth/login', {
             email,
             password,
         });
@@ -29,10 +29,10 @@ export const authService = {
         }
 
         // Store token
-        localStorage.setItem('token', response.token);
+        localStorage.setItem('token', response.data.token);
 
-        console.log('[AUTH] Login sucesso, user:', response.user);
-        return response.user;
+        console.log('[AUTH] Login sucesso, user:', response.data.user);
+        return response.data.user;
     },
 
     /**
@@ -50,8 +50,8 @@ export const authService = {
         if (!token) return null;
 
         try {
-            const response = await apiClient.get<{ success: boolean; user: AuthUser }>('/auth/me');
-            return response.success ? response.user : null;
+            const response = await apiClient.get<{ success: boolean; data: { user: AuthUser } }>('/auth/me');
+            return response.success ? response.data.user : null;
         } catch (error) {
             console.error('[AUTH] Get current user error:', error);
             localStorage.removeItem('token');
