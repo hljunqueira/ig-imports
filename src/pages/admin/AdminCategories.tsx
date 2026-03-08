@@ -274,12 +274,16 @@ const AdminCategories: React.FC = () => {
                     </div>
 
                     <div>
-                        <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">
+                        <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">
                             Imagem da Categoria
                         </label>
+                        <p className="text-[10px] text-gray-500 mb-3">
+                            Tamanho recomendado: <span className="text-primary font-bold">400 × 400 px</span> (quadrada) — formatos JPG ou PNG, máx. 2 MB.
+                            A imagem será exibida em formato 1:1 no site.
+                        </p>
                         <div className="flex gap-4 items-start">
-                            {/* Preview */}
-                            <div className="w-20 h-20 bg-card-dark border border-white/5 overflow-hidden shrink-0">
+                            {/* Preview quadrado 1:1 */}
+                            <div className="w-24 h-24 bg-card-dark border border-white/10 overflow-hidden shrink-0">
                                 {formData.image_url ? (
                                     <img
                                         src={formData.image_url}
@@ -287,8 +291,9 @@ const AdminCategories: React.FC = () => {
                                         className="w-full h-full object-cover"
                                     />
                                 ) : (
-                                    <div className="w-full h-full flex items-center justify-center">
+                                    <div className="w-full h-full flex flex-col items-center justify-center gap-1">
                                         <span className="material-symbols-outlined text-2xl text-gray-600">image</span>
+                                        <span className="text-[9px] text-gray-600 text-center leading-tight px-1">400×400 px</span>
                                     </div>
                                 )}
                             </div>

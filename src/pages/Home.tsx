@@ -276,7 +276,8 @@ const Home: React.FC = () => {
                       <span className="material-symbols-outlined text-4xl text-gray-600">category</span>
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-black/60 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                  {/* Overlay: nome visível apenas no hover */}
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                     <span className="text-white text-xs font-bold uppercase tracking-widest text-center px-2">
                       {category.name}
                     </span>
