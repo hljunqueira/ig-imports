@@ -4,7 +4,7 @@ import type { ProductRequest } from '../../types';
 import { useDialog } from '../../context/DialogContext';
 
 const AdminRequests: React.FC = () => {
-    const { alert: dialogAlert, error } = useDialog();
+    const { alert: dialogAlert, error, success } = useDialog();
     const [requests, setRequests] = useState<ProductRequest[]>([]);
     const [stats, setStats] = useState({
         total: 0,
@@ -20,6 +20,21 @@ const AdminRequests: React.FC = () => {
     const [showModal, setShowModal] = useState(false);
     const [quotePrice, setQuotePrice] = useState('');
     const [adminNotes, setAdminNotes] = useState('');
+
+    // Modal de criação de solicitação
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [creating, setCreating] = useState(false);
+    const [createForm, setCreateForm] = useState({
+        customer_name: '',
+        customer_phone: '',
+        customer_email: '',
+        product_description: '',
+        preferred_brand: '',
+        preferred_size: '',
+        quantity: 1,
+        max_budget: '',
+        urgency: 'normal' as 'low' | 'normal' | 'high' | 'urgent',
+    });
 
     useEffect(() => {
         loadData();
@@ -111,6 +126,7 @@ const AdminRequests: React.FC = () => {
 
         try {
             await requestsService.quoteRequest(selectedRequest.id, price, undefined, adminNotes);
+            await dialogAlert('Orçamento enviado com sucesso!');
         } catch (err) {
             await error('Erro ao enviar orçamento');
             return;
@@ -132,11 +148,62 @@ const AdminRequests: React.FC = () => {
         }
     };
 
+    const handleOpenCreateModal = () => {
+        setCreateForm({
+            customer_name: '',
+            customer_phone: '',
+            customer_email: '',
+            product_description: '',
+            preferred_brand: '',
+            preferred_size: '',
+            quantity: 1,
+            max_budget: '',
+            urgency: 'normal',
+        });
+        setShowCreateModal(true);
+    };
+
+    const handleCreateRequest = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!createForm.customer_name || !createForm.customer_phone || !createForm.product_description) {
+            await dialogAlert('Nome, telefone e descrição do produto são obrigatórios');
+            return;
+        }
+
+        setCreating(true);
+        try {
+            await requestsService.createRequest({
+                customer_name: createForm.customer_name,
+                customer_phone: createForm.customer_phone,
+                customer_email: createForm.customer_email || undefined,
+                product_description: createForm.product_description,
+                preferred_brand: createForm.preferred_brand || undefined,
+                preferred_size: createForm.preferred_size || undefined,
+                quantity: createForm.quantity,
+                max_budget: createForm.max_budget ? parseFloat(createForm.max_budget) : undefined,
+                urgency: createForm.urgency,
+            });
+            await success('Solicitação criada com sucesso!');
+            setShowCreateModal(false);
+            loadData();
+        } catch (err) {
+            console.error('Error creating request:', err);
+            await error('Erro ao criar solicitação');
+        } finally {
+            setCreating(false);
+        }
+    };
+
     return (
         <div className="p-6">
-            <div className="mb-6">
-                <h1 className="text-3xl font-bold text-white mb-2">Solicitações de Encomenda</h1>
-                <p className="text-gray-400">Gerencie pedidos de produtos personalizados ou indisponíveis</p>
+            <div className="mb-6 flex justify-end">
+                <button
+                    onClick={handleOpenCreateModal}
+                    className="gold-gradient text-background-dark px-6 py-3 font-bold uppercase tracking-widest text-[10px] flex items-center gap-2 hover:brightness-110 transition-all shadow-lg shadow-primary/10"
+                >
+                    <span className="material-symbols-outlined text-base">add</span>
+                    Nova Solicitação
+                </button>
             </div>
 
             {/* Stats */}
@@ -343,6 +410,165 @@ const AdminRequests: React.FC = () => {
                                 Enviar Orçamento
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Create Request Modal */}
+            {showCreateModal && (
+                <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+                    <div className="bg-card-dark border border-white/10 rounded-sm max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+                        <h3 className="text-xl font-bold text-white mb-6">Nova Solicitação de Encomenda</h3>
+                        <form onSubmit={handleCreateRequest} className="space-y-5">
+                            {/* Dados do Cliente */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">
+                                        Nome do Cliente *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={createForm.customer_name}
+                                        onChange={(e) => setCreateForm({ ...createForm, customer_name: e.target.value })}
+                                        className="w-full bg-background-dark border border-white/10 px-4 py-3 text-sm text-white focus:border-primary outline-none transition-colors"
+                                        placeholder="Nome completo"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">
+                                        Telefone *
+                                    </label>
+                                    <input
+                                        type="tel"
+                                        required
+                                        value={createForm.customer_phone}
+                                        onChange={(e) => setCreateForm({ ...createForm, customer_phone: e.target.value })}
+                                        className="w-full bg-background-dark border border-white/10 px-4 py-3 text-sm text-white focus:border-primary outline-none transition-colors"
+                                        placeholder="(48) 99999-9999"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">
+                                    E-mail
+                                </label>
+                                <input
+                                    type="email"
+                                    value={createForm.customer_email}
+                                    onChange={(e) => setCreateForm({ ...createForm, customer_email: e.target.value })}
+                                    className="w-full bg-background-dark border border-white/10 px-4 py-3 text-sm text-white focus:border-primary outline-none transition-colors"
+                                    placeholder="cliente@email.com"
+                                />
+                            </div>
+
+                            {/* Descrição do Produto */}
+                            <div>
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">
+                                    Descrição do Produto *
+                                </label>
+                                <textarea
+                                    required
+                                    rows={3}
+                                    value={createForm.product_description}
+                                    onChange={(e) => setCreateForm({ ...createForm, product_description: e.target.value })}
+                                    className="w-full bg-background-dark border border-white/10 px-4 py-3 text-sm text-white focus:border-primary outline-none transition-colors resize-none"
+                                    placeholder="Descreva o produto que o cliente está solicitando..."
+                                />
+                            </div>
+
+                            {/* Detalhes Adicionais */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">
+                                        Marca Preferida
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={createForm.preferred_brand}
+                                        onChange={(e) => setCreateForm({ ...createForm, preferred_brand: e.target.value })}
+                                        className="w-full bg-background-dark border border-white/10 px-4 py-3 text-sm text-white focus:border-primary outline-none transition-colors"
+                                        placeholder="Ex: Nike, Adidas..."
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">
+                                        Tamanho
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={createForm.preferred_size}
+                                        onChange={(e) => setCreateForm({ ...createForm, preferred_size: e.target.value })}
+                                        className="w-full bg-background-dark border border-white/10 px-4 py-3 text-sm text-white focus:border-primary outline-none transition-colors"
+                                        placeholder="Ex: M, 42, G..."
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">
+                                        Quantidade
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        value={createForm.quantity}
+                                        onChange={(e) => setCreateForm({ ...createForm, quantity: Math.max(1, parseInt(e.target.value) || 1) })}
+                                        className="w-full bg-background-dark border border-white/10 px-4 py-3 text-sm text-white focus:border-primary outline-none transition-colors"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Orçamento e Urgência */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">
+                                        Orçamento Máximo (R$)
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        value={createForm.max_budget}
+                                        onChange={(e) => setCreateForm({ ...createForm, max_budget: e.target.value })}
+                                        className="w-full bg-background-dark border border-white/10 px-4 py-3 text-sm text-white focus:border-primary outline-none transition-colors"
+                                        placeholder="0,00"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">
+                                        Urgência
+                                    </label>
+                                    <select
+                                        value={createForm.urgency}
+                                        onChange={(e) => setCreateForm({ ...createForm, urgency: e.target.value as any })}
+                                        className="w-full bg-background-dark border border-white/10 px-4 py-3 text-sm text-white focus:border-primary outline-none transition-colors"
+                                    >
+                                        <option value="low">Baixa</option>
+                                        <option value="normal">Normal</option>
+                                        <option value="high">Alta</option>
+                                        <option value="urgent">Urgente</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            {/* Botões */}
+                            <div className="flex gap-4 pt-4 border-t border-white/10">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowCreateModal(false)}
+                                    className="flex-1 px-6 py-3 border border-white/10 text-[10px] font-bold uppercase tracking-widest hover:border-primary transition-colors"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={creating}
+                                    className="flex-1 gold-gradient text-background-dark px-6 py-3 font-bold uppercase tracking-widest text-[10px] hover:brightness-110 transition-all disabled:opacity-50"
+                                >
+                                    {creating ? 'Criando...' : 'Criar Solicitação'}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

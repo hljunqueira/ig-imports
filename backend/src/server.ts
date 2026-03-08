@@ -134,8 +134,8 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
         }
 
         const folder = (req.body.folder || 'general') as string;
-        const baseUrl = process.env.API_BASE_URL || `http://localhost:${PORT}`;
-        const url = `${baseUrl}/uploads/${folder}/${req.file.filename}`;
+        // Retorna caminho relativo para evitar problemas com domínios diferentes
+        const url = `/uploads/${folder}/${req.file.filename}`;
 
         res.json({ success: true, url });
     } catch (error) {

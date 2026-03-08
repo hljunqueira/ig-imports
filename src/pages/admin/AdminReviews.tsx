@@ -3,6 +3,18 @@ import { reviewsService } from '../../lib/reviews';
 import type { ProductReview } from '../../types';
 import { useDialog } from '../../context/DialogContext';
 
+// Helper para construir URL completa da imagem
+const getImageUrl = (imageUrl: string | undefined): string => {
+  if (!imageUrl) return '/ig-imports-logo.png';
+  // Se já for URL absoluta (http/https), retorna como está
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+    return imageUrl;
+  }
+  // Se for caminho relativo, adiciona a base da API
+  const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+  return `${API_BASE}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+};
+
 const AdminReviews: React.FC = () => {
     const { error, confirm } = useDialog();
     const [reviews, setReviews] = useState<(ProductReview & { product: { name: string; image_url: string } })[]>([]);
@@ -107,11 +119,6 @@ const AdminReviews: React.FC = () => {
 
     return (
         <div className="p-6">
-            <div className="mb-6">
-                <h1 className="text-3xl font-bold text-white mb-2">Avaliações de Produtos</h1>
-                <p className="text-gray-400">Gerencie feedbacks e avaliações dos clientes</p>
-            </div>
-
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <div className="bg-card-dark border border-white/10 p-4 rounded-sm">
@@ -177,7 +184,7 @@ const AdminReviews: React.FC = () => {
                                 <div className="flex items-start gap-3 md:w-1/4">
                                     {review.product?.image_url && (
                                         <img
-                                            src={review.product.image_url}
+                                            src={getImageUrl(review.product.image_url)}
                                             alt={review.product.name}
                                             className="w-16 h-16 object-cover rounded"
                                         />

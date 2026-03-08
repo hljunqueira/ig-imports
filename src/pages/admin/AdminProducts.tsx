@@ -3,6 +3,18 @@ import { Product, productService, Category, categoryService } from '../../lib/pr
 import Modal from '../../components/Modal';
 import { useDialog } from '../../context/DialogContext';
 
+// Helper para construir URL completa da imagem
+const getImageUrl = (imageUrl: string | undefined): string => {
+  if (!imageUrl) return '/ig-imports-logo.png';
+  // Se já for URL absoluta (http/https), retorna como está
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+    return imageUrl;
+  }
+  // Se for caminho relativo, adiciona a base da API
+  const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+  return `${API_BASE}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+};
+
 const AdminProducts: React.FC = () => {
     const { error } = useDialog();
     const [products, setProducts] = useState<Product[]>([]);
@@ -281,7 +293,7 @@ const AdminProducts: React.FC = () => {
                                     <td className="p-6">
                                         <div className="w-16 h-20 bg-card-dark border border-white/5 overflow-hidden">
                                             <img
-                                                src={product.image_url || '/ig-imports-logo.png'}
+                                                src={getImageUrl(product.image_url)}
                                                 alt={product.name}
                                                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                                             />

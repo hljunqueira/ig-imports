@@ -13,6 +13,18 @@ import { formatCurrency } from '../lib/utils';
 import type { ProductReview, ProductRequest } from '../types';
 import { useDialog } from '../context/DialogContext';
 
+// Helper para construir URL completa da imagem
+const getImageUrl = (imageUrl: string | undefined): string => {
+  if (!imageUrl) return '';
+  // Se já for URL absoluta (http/https), retorna como está
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+    return imageUrl;
+  }
+  // Se for caminho relativo, adiciona a base da API
+  const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+  return `${API_BASE}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+};
+
 const JERSEYS = [
   "/hero-jersey-removebg-preview.png",
   "/hero-real-removebg-preview.png",
@@ -267,7 +279,7 @@ const Home: React.FC = () => {
                 >
                   {category.image_url ? (
                     <img
-                      src={category.image_url}
+                      src={getImageUrl(category.image_url)}
                       alt={category.name}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />

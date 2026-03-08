@@ -8,7 +8,11 @@ export const getStockMovements = async (req: Request, res: Response): Promise<vo
         const { product_id } = req.query;
         
         let sql = `
-            SELECT sm.*, p.name as product_name, p.image_url as product_image
+            SELECT sm.*, 
+                   jsonb_build_object(
+                       'name', p.name,
+                       'image_url', p.image_url
+                   ) as product
             FROM stock_movements sm
             LEFT JOIN products p ON sm.product_id = p.id
             WHERE 1=1
@@ -83,7 +87,11 @@ export const createStockMovement = async (req: AuthRequest, res: Response): Prom
 export const getLowStockProducts = async (req: Request, res: Response): Promise<void> => {
     try {
         const result = await query(
-            `SELECT p.*, c.name as category_name
+            `SELECT p.*, 
+                    jsonb_build_object(
+                        'name', c.name,
+                        'slug', c.slug
+                    ) as category
              FROM products p
              LEFT JOIN categories c ON p.category_id = c.id
              WHERE p.stock <= p.min_stock AND p.status = 'active'

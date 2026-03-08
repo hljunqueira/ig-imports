@@ -129,8 +129,6 @@ const AdminFinance: React.FC = () => {
                 transaction_date: transactionForm.transaction_date,
                 payment_method: transactionForm.payment_method,
                 payment_status: transactionForm.payment_status,
-                reference_id: undefined,
-                reference_type: undefined,
             });
             await success('Transação criada com sucesso!');
             setShowTransactionModal(false);
@@ -156,13 +154,11 @@ const AdminFinance: React.FC = () => {
         try {
             await financeService.createAccountReceivable({
                 customer_name: receivableForm.customer_name,
-                description: receivableForm.description || undefined,
+                description: receivableForm.notes || receivableForm.description || undefined,
                 amount: parseFloat(receivableForm.amount),
                 amount_paid: 0,
                 due_date: receivableForm.due_date,
                 status: 'pending',
-                related_order_id: undefined,
-                notes: receivableForm.notes || undefined,
             });
             await success('Conta a receber criada com sucesso!');
             setShowReceivableModal(false);
@@ -179,13 +175,13 @@ const AdminFinance: React.FC = () => {
         e.preventDefault();
         try {
             await financeService.createAccountPayable({
-                description: payableForm.description,
-                supplier_name: payableForm.supplier_name || undefined,
+                description: payableForm.notes 
+                    ? `${payableForm.description} - ${payableForm.notes}` 
+                    : payableForm.description,
                 amount: parseFloat(payableForm.amount),
                 amount_paid: 0,
                 due_date: payableForm.due_date,
                 status: 'pending',
-                notes: payableForm.notes || undefined,
             });
             await success('Conta a pagar criada com sucesso!');
             setShowPayableModal(false);
@@ -509,11 +505,6 @@ const AdminFinance: React.FC = () => {
 
     return (
         <div className="p-6">
-            <div className="mb-6">
-                <h1 className="text-3xl font-bold text-white mb-2">Módulo Financeiro</h1>
-                <p className="text-gray-400">Controle de receitas, despesas e fluxo de caixa</p>
-            </div>
-
             {/* Tabs */}
             <div className="flex gap-2 mb-6 border-b border-white/10">
                 {[

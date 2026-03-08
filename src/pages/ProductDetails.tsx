@@ -6,6 +6,18 @@ import Footer from '../components/Footer';
 import { Product, productService } from '../lib/products';
 import { useCartStore } from '../store/cartStore';
 
+// Helper para construir URL completa da imagem
+const getImageUrl = (imageUrl: string | undefined): string => {
+  if (!imageUrl) return '/ig-imports-logo.png';
+  // Se já for URL absoluta (http/https), retorna como está
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+    return imageUrl;
+  }
+  // Se for caminho relativo, adiciona a base da API
+  const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+  return `${API_BASE}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+};
+
 const ProductDetails: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
     const navigate = useNavigate();
@@ -101,7 +113,7 @@ const ProductDetails: React.FC = () => {
                     >
                         <div className="bg-gray-900 aspect-4/5 rounded-sm overflow-hidden border border-white/5">
                             <img
-                                src={product.image_url || '/ig-imports-logo.png'}
+                                src={getImageUrl(product.image_url)}
                                 alt={product.name}
                                 className="w-full h-full object-cover"
                             />
@@ -111,7 +123,7 @@ const ProductDetails: React.FC = () => {
                             {[product.image_url, ...(product.gallery || [])].slice(0, 4).map((img, idx) => (
                                 img && (
                                     <div key={idx} className="aspect-square bg-gray-900 rounded-sm overflow-hidden border border-white/5 cursor-pointer hover:border-primary transition-colors">
-                                        <img src={img} alt="" className="w-full h-full object-cover" />
+                                        <img src={getImageUrl(img)} alt="" className="w-full h-full object-cover" />
                                     </div>
                                 )
                             ))}

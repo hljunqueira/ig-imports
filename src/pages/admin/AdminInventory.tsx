@@ -1,8 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { inventoryService } from '../../lib/inventory';
+import { productService } from '../../lib/products';
 import type { StockMovement, Supplier, Product } from '../../types';
+import { useDialog } from '../../context/DialogContext';
+
+// Helper para construir URL completa da imagem
+const getImageUrl = (imageUrl: string | undefined): string => {
+  if (!imageUrl) return '/ig-imports-logo.png';
+  // Se já for URL absoluta (http/https), retorna como está
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+    return imageUrl;
+  }
+  // Se for caminho relativo, adiciona a base da API
+  const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+  return `${API_BASE}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+};
 
 const AdminInventory: React.FC = () => {
+    const { alert: dialogAlert, confirm, error } = useDialog();
     const [activeTab, setActiveTab] = useState<'overview' | 'movements' | 'suppliers' | 'lowstock'>('overview');
     const [movements, setMovements] = useState<(StockMovement & { product: { name: string; image_url: string } })[]>([]);
     const [suppliers, setSuppliers] = useState<Supplier[]>([]);
@@ -15,6 +30,28 @@ const AdminInventory: React.FC = () => {
         totalStock: 0,
     });
     const [isLoading, setIsLoading] = useState(true);
+
+    // Modals state
+    const [showSupplierModal, setShowSupplierModal] = useState(false);
+    const [showStockModal, setShowStockModal] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+    const [allProducts, setAllProducts] = useState<Product[]>([]);
+
+    // Form states
+    const [supplierForm, setSupplierForm] = useState({
+        name: '',
+        contact_name: '',
+        phone: '',
+        email: '',
+        address: '',
+        notes: '',
+    });
+    const [stockForm, setStockForm] = useState({
+        product_id: '',
+        movement_type: 'in' as 'in' | 'out' | 'adjustment',
+        quantity: '',
+        reason: '',
+    });
 
     useEffect(() => {
         loadData();
@@ -39,10 +76,81 @@ const AdminInventory: React.FC = () => {
                 const data = await inventoryService.getInventoryStats();
                 setStats(data);
             }
-        } catch (error) {
-            console.error('Error loading inventory data:', error);
+            // Load all products for stock modal
+            if (activeTab === 'lowstock') {
+                const products = await productService.getAll();
+                setAllProducts(products);
+            }
+        } catch (err) {
+            console.error('Error loading inventory data:', err);
         }
         setIsLoading(false);
+    };
+
+    const handleCreateSupplier = async () => {
+        if (!supplierForm.name) {
+            await dialogAlert('Nome do fornecedor é obrigatório');
+            return;
+        }
+        try {
+            await inventoryService.createSupplier(supplierForm);
+            await dialogAlert('Fornecedor criado com sucesso!');
+            setShowSupplierModal(false);
+            setSupplierForm({ name: '', contact_name: '', phone: '', email: '', address: '', notes: '' });
+            loadData();
+        } catch (err) {
+            await error('Erro ao criar fornecedor');
+        }
+    };
+
+    const handleStockMovement = async () => {
+        if (!stockForm.product_id || !stockForm.quantity) {
+            await dialogAlert('Produto e quantidade são obrigatórios');
+            return;
+        }
+        const quantity = parseInt(stockForm.quantity);
+        if (isNaN(quantity) || quantity <= 0) {
+            await dialogAlert('Quantidade inválida');
+            return;
+        }
+        try {
+            await inventoryService.createStockMovement({
+                product_id: stockForm.product_id,
+                movement_type: stockForm.movement_type,
+                quantity,
+                previous_stock: 0,
+                new_stock: 0,
+                reason: stockForm.reason,
+            });
+            await dialogAlert('Movimentação registrada com sucesso!');
+            setShowStockModal(false);
+            setStockForm({ product_id: '', movement_type: 'in', quantity: '', reason: '' });
+            setSelectedProduct(null);
+            loadData();
+        } catch (err) {
+            await error('Erro ao registrar movimentação');
+        }
+    };
+
+    const openStockModal = (product?: Product) => {
+        if (product) {
+            setSelectedProduct(product);
+            setStockForm({
+                product_id: product.id,
+                movement_type: 'in',
+                quantity: '',
+                reason: '',
+            });
+        } else {
+            setSelectedProduct(null);
+            setStockForm({
+                product_id: '',
+                movement_type: 'in',
+                quantity: '',
+                reason: '',
+            });
+        }
+        setShowStockModal(true);
     };
 
     const formatDate = (date: string) => {
@@ -108,7 +216,7 @@ const AdminInventory: React.FC = () => {
                         {lowStockProducts.slice(0, 6).map((product) => (
                             <div key={product.id} className="flex items-center gap-3 p-3 bg-white/5 rounded">
                                 {product.image_url && (
-                                    <img src={product.image_url} alt={product.name} className="w-12 h-12 object-cover rounded" />
+                                    <img src={getImageUrl(product.image_url)} alt={product.name} className="w-12 h-12 object-cover rounded" />
                                 )}
                                 <div className="flex-1 min-w-0">
                                     <p className="text-white text-sm font-medium truncate">{product.name}</p>
@@ -177,7 +285,7 @@ const AdminInventory: React.FC = () => {
                                 <td className="p-4">
                                     <div className="flex items-center gap-3">
                                         {m.product.image_url && (
-                                            <img src={m.product.image_url} alt={m.product.name} className="w-10 h-10 object-cover rounded" />
+                                            <img src={getImageUrl(m.product.image_url)} alt={m.product.name} className="w-10 h-10 object-cover rounded" />
                                         )}
                                         <span className="text-white text-sm">{m.product.name}</span>
                                     </div>
@@ -202,7 +310,10 @@ const AdminInventory: React.FC = () => {
         <div className="bg-card-dark border border-white/10 rounded-sm">
             <div className="p-4 border-b border-white/10 flex justify-between items-center">
                 <h3 className="text-lg font-semibold text-white">Fornecedores</h3>
-                <button className="px-4 py-2 bg-primary text-background-dark text-xs font-bold uppercase tracking-wider rounded-sm hover:brightness-110">
+                <button 
+                    onClick={() => setShowSupplierModal(true)}
+                    className="px-4 py-2 bg-primary text-background-dark text-xs font-bold uppercase tracking-wider rounded-sm hover:brightness-110"
+                >
                     Novo Fornecedor
                 </button>
             </div>
@@ -276,11 +387,11 @@ const AdminInventory: React.FC = () => {
                                     </div>
                                 </div>
                                 <div className="mt-3 pt-3 border-t border-white/10 flex gap-2">
-                                    <button className="flex-1 px-3 py-2 bg-primary/20 text-primary text-xs font-medium rounded hover:bg-primary/30">
+                                    <button 
+                                        onClick={() => openStockModal(product)}
+                                        className="flex-1 px-3 py-2 bg-primary/20 text-primary text-xs font-medium rounded hover:bg-primary/30"
+                                    >
                                         Repor Estoque
-                                    </button>
-                                    <button className="px-3 py-2 border border-white/10 text-gray-400 text-xs rounded hover:bg-white/5">
-                                        Editar
                                     </button>
                                 </div>
                             </div>
@@ -293,11 +404,6 @@ const AdminInventory: React.FC = () => {
 
     return (
         <div className="p-6">
-            <div className="mb-6">
-                <h1 className="text-3xl font-bold text-white mb-2">Controle de Estoque</h1>
-                <p className="text-gray-400">Gerencie movimentações, fornecedores e níveis de estoque</p>
-            </div>
-
             {/* Tabs */}
             <div className="flex gap-2 mb-6 border-b border-white/10">
                 {[
@@ -331,6 +437,177 @@ const AdminInventory: React.FC = () => {
                     {activeTab === 'suppliers' && renderSuppliers()}
                     {activeTab === 'lowstock' && renderLowStock()}
                 </>
+            )}
+
+            {/* Supplier Modal */}
+            {showSupplierModal && (
+                <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+                    <div className="bg-card-dark border border-white/10 rounded-sm max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
+                        <h3 className="text-xl font-bold text-white mb-4">Novo Fornecedor</h3>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-gray-400 text-sm mb-2">Nome *</label>
+                                <input
+                                    type="text"
+                                    value={supplierForm.name}
+                                    onChange={(e) => setSupplierForm({ ...supplierForm, name: e.target.value })}
+                                    className="w-full bg-background-dark border border-white/10 rounded-sm px-4 py-2 text-white"
+                                    placeholder="Nome do fornecedor"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-gray-400 text-sm mb-2">Nome do Contato</label>
+                                <input
+                                    type="text"
+                                    value={supplierForm.contact_name}
+                                    onChange={(e) => setSupplierForm({ ...supplierForm, contact_name: e.target.value })}
+                                    className="w-full bg-background-dark border border-white/10 rounded-sm px-4 py-2 text-white"
+                                    placeholder="Nome da pessoa de contato"
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-gray-400 text-sm mb-2">Telefone</label>
+                                    <input
+                                        type="text"
+                                        value={supplierForm.phone}
+                                        onChange={(e) => setSupplierForm({ ...supplierForm, phone: e.target.value })}
+                                        className="w-full bg-background-dark border border-white/10 rounded-sm px-4 py-2 text-white"
+                                        placeholder="(00) 00000-0000"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-gray-400 text-sm mb-2">Email</label>
+                                    <input
+                                        type="email"
+                                        value={supplierForm.email}
+                                        onChange={(e) => setSupplierForm({ ...supplierForm, email: e.target.value })}
+                                        className="w-full bg-background-dark border border-white/10 rounded-sm px-4 py-2 text-white"
+                                        placeholder="email@exemplo.com"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-gray-400 text-sm mb-2">Endereço</label>
+                                <input
+                                    type="text"
+                                    value={supplierForm.address}
+                                    onChange={(e) => setSupplierForm({ ...supplierForm, address: e.target.value })}
+                                    className="w-full bg-background-dark border border-white/10 rounded-sm px-4 py-2 text-white"
+                                    placeholder="Endereço completo"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-gray-400 text-sm mb-2">Observações</label>
+                                <textarea
+                                    value={supplierForm.notes}
+                                    onChange={(e) => setSupplierForm({ ...supplierForm, notes: e.target.value })}
+                                    className="w-full bg-background-dark border border-white/10 rounded-sm px-4 py-2 text-white h-20 resize-none"
+                                    placeholder="Informações adicionais..."
+                                />
+                            </div>
+                        </div>
+                        <div className="flex gap-3 mt-6">
+                            <button
+                                onClick={() => {
+                                    setShowSupplierModal(false);
+                                    setSupplierForm({ name: '', contact_name: '', phone: '', email: '', address: '', notes: '' });
+                                }}
+                                className="flex-1 px-4 py-2 border border-white/10 text-white rounded-sm hover:bg-white/5"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={handleCreateSupplier}
+                                className="flex-1 px-4 py-2 bg-primary text-background-dark font-bold rounded-sm hover:brightness-110"
+                            >
+                                Criar Fornecedor
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Stock Movement Modal */}
+            {showStockModal && (
+                <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+                    <div className="bg-card-dark border border-white/10 rounded-sm max-w-lg w-full p-6">
+                        <h3 className="text-xl font-bold text-white mb-4">
+                            {selectedProduct ? `Repor Estoque - ${selectedProduct.name}` : 'Movimentação de Estoque'}
+                        </h3>
+                        <div className="space-y-4">
+                            {!selectedProduct && (
+                                <div>
+                                    <label className="block text-gray-400 text-sm mb-2">Produto *</label>
+                                    <select
+                                        value={stockForm.product_id}
+                                        onChange={(e) => {
+                                            const product = allProducts.find(p => p.id === e.target.value);
+                                            setSelectedProduct(product || null);
+                                            setStockForm({ ...stockForm, product_id: e.target.value });
+                                        }}
+                                        className="w-full bg-background-dark border border-white/10 rounded-sm px-4 py-2 text-white"
+                                    >
+                                        <option value="">Selecione um produto</option>
+                                        {allProducts.map((p) => (
+                                            <option key={p.id} value={p.id}>{p.name} (Estoque: {p.stock})</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
+                            <div>
+                                <label className="block text-gray-400 text-sm mb-2">Tipo de Movimentação *</label>
+                                <select
+                                    value={stockForm.movement_type}
+                                    onChange={(e) => setStockForm({ ...stockForm, movement_type: e.target.value as any })}
+                                    className="w-full bg-background-dark border border-white/10 rounded-sm px-4 py-2 text-white"
+                                >
+                                    <option value="in">Entrada (Compra/Devolução)</option>
+                                    <option value="out">Saída (Ajuste/Venda)</option>
+                                    <option value="adjustment">Ajuste (Definir valor)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-gray-400 text-sm mb-2">Quantidade *</label>
+                                <input
+                                    type="number"
+                                    value={stockForm.quantity}
+                                    onChange={(e) => setStockForm({ ...stockForm, quantity: e.target.value })}
+                                    className="w-full bg-background-dark border border-white/10 rounded-sm px-4 py-2 text-white"
+                                    placeholder="0"
+                                    min="1"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-gray-400 text-sm mb-2">Motivo/Observação</label>
+                                <textarea
+                                    value={stockForm.reason}
+                                    onChange={(e) => setStockForm({ ...stockForm, reason: e.target.value })}
+                                    className="w-full bg-background-dark border border-white/10 rounded-sm px-4 py-2 text-white h-20 resize-none"
+                                    placeholder="Motivo da movimentação..."
+                                />
+                            </div>
+                        </div>
+                        <div className="flex gap-3 mt-6">
+                            <button
+                                onClick={() => {
+                                    setShowStockModal(false);
+                                    setSelectedProduct(null);
+                                    setStockForm({ product_id: '', movement_type: 'in', quantity: '', reason: '' });
+                                }}
+                                className="flex-1 px-4 py-2 border border-white/10 text-white rounded-sm hover:bg-white/5"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={handleStockMovement}
+                                className="flex-1 px-4 py-2 bg-primary text-background-dark font-bold rounded-sm hover:brightness-110"
+                            >
+                                Registrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

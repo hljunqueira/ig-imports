@@ -3,6 +3,18 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useCartStore } from '../store/cartStore';
 
+// Helper para construir URL completa da imagem
+const getImageUrl = (imageUrl: string | undefined): string => {
+  if (!imageUrl) return '/ig-imports-logo.png';
+  // Se já for URL absoluta (http/https), retorna como está
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+    return imageUrl;
+  }
+  // Se for caminho relativo, adiciona a base da API
+  const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+  return `${API_BASE}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+};
+
 const CartDrawer: React.FC = () => {
     const { items, isOpen, closeCart, removeItem, updateQuantity, total, itemCount } = useCartStore();
 
@@ -72,14 +84,14 @@ const CartDrawer: React.FC = () => {
                                                 {item.slug ? (
                                                     <Link to={`/product/${item.slug}`} onClick={closeCart}>
                                                         <img
-                                                            src={item.image || '/ig-imports-logo.png'}
+                                                            src={getImageUrl(item.image)}
                                                             alt={item.name}
                                                             className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                                                         />
                                                     </Link>
                                                 ) : (
                                                     <img
-                                                        src={item.image || '/ig-imports-logo.png'}
+                                                        src={getImageUrl(item.image)}
                                                         alt={item.name}
                                                         className="w-full h-full object-cover"
                                                     />

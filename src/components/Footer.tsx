@@ -43,7 +43,7 @@ const Footer: React.FC = () => {
 
                 <div className="flex flex-col md:flex-row justify-between items-center gap-6 w-full opacity-60 hover:opacity-100 transition-opacity duration-500">
                     <p className="text-[10px] uppercase tracking-[0.2em] font-light text-gray-500 text-center md:text-left">
-                        &copy; 2026 IG Imports. Todos os direitos reservados.
+                        &copy; 2026 IG IMPORTS
                     </p>
                     <div className="flex items-center gap-2">
                         <span className="hidden md:block h-px w-8 bg-gray-600"></span>

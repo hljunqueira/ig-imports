@@ -231,8 +231,7 @@ const AdminOrders: React.FC = () => {
     return (
         <div className="space-y-6">
             {/* Header com botão Novo Pedido */}
-            <div className="flex justify-between items-center">
-                <h2 className="text-xl font-display font-bold">Gerenciar Pedidos</h2>
+            <div className="flex justify-end">
                 <button
                     onClick={handleOpenCreateModal}
                     className="gold-gradient text-background-dark px-6 py-3 font-bold uppercase tracking-widest text-[10px] flex items-center gap-2 hover:brightness-110 transition-all shadow-lg shadow-primary/10"

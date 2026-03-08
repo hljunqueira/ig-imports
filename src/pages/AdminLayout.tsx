@@ -107,11 +107,11 @@ const AdminLayout: React.FC = () => {
         <div className="min-h-screen flex bg-background-dark text-slate-100 font-sans">
             {/* Sidebar */}
             <aside className="w-64 bg-sidebar-dark border-r border-white/5 flex flex-col fixed inset-y-0 z-50">
-                <div className="p-8 border-b border-white/5">
+                <div className="p-6 border-b border-white/5">
                     <div className="flex items-center gap-3">
                         <img
                             alt="IG Imports Logo"
-                            className="h-10 w-auto"
+                            className="h-8 w-auto"
                             src={IMAGES.LOGO}
                         />
                         <span className="font-display text-sm font-bold tracking-[0.2em] text-gold-gradient">
@@ -120,35 +120,35 @@ const AdminLayout: React.FC = () => {
                     </div>
                 </div>
 
-                <nav className="flex-1 p-6 space-y-2">
+                <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
                     {menuItems.map((item) => (
                         <button
                             key={item.id}
                             onClick={() => handleNavigate(item.id)}
-                            className={`w-full flex items-center gap-4 px-4 py-3 text-xs font-bold uppercase tracking-widest transition-all ${
+                            className={`w-full flex items-center gap-3 px-4 py-2.5 text-xs font-bold uppercase tracking-widest transition-all ${
                                 activeSection === item.id
                                     ? 'text-primary bg-primary/5 border-l-2 border-primary'
                                     : 'text-gray-500 hover:text-primary'
                             }`}
                         >
-                            <span className="material-symbols-outlined text-lg">{item.icon}</span>
+                            <span className="material-symbols-outlined text-base">{item.icon}</span>
                             {item.label}
                         </button>
                     ))}
                 </nav>
 
-                <div className="p-6 border-t border-white/5">
+                <div className="p-4 border-t border-white/5">
                     {user && (
-                        <div className="mb-4 px-4">
-                            <p className="text-xs text-gray-400">{user.email}</p>
+                        <div className="mb-3 px-4">
+                            <p className="text-xs text-gray-400 truncate">{user.email}</p>
                             <p className="text-[10px] text-primary uppercase tracking-widest">{user.role}</p>
                         </div>
                     )}
                     <button
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-4 px-4 py-3 text-gray-500 hover:text-red-500 transition-colors text-xs font-bold uppercase tracking-widest"
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-gray-500 hover:text-red-500 transition-colors text-xs font-bold uppercase tracking-widest"
                     >
-                        <span className="material-symbols-outlined text-lg">logout</span>
+                        <span className="material-symbols-outlined text-base">logout</span>
                         Sair
                     </button>
                 </div>
@@ -156,9 +156,9 @@ const AdminLayout: React.FC = () => {
 
             {/* Main Content */}
             <main className="flex-1 ml-64 min-h-screen">
-                <header className="h-24 px-10 flex items-center justify-between border-b border-white/5 bg-background-dark/50 backdrop-blur-md sticky top-0 z-40">
+                <header className="h-20 px-8 flex items-center justify-between border-b border-white/5 bg-background-dark/50 backdrop-blur-md sticky top-0 z-40 shrink-0">
                     <div>
-                        <h1 className="font-display text-2xl font-bold tracking-widest">
+                        <h1 className="font-display text-xl font-bold tracking-widest">
                             {getSectionTitle()}
                         </h1>
                         <p className="text-[10px] text-gray-500 uppercase tracking-[0.3em]">
@@ -176,14 +176,14 @@ const AdminLayout: React.FC = () => {
                     </a>
                 </header>
 
-                <section className="p-10">
+                <section className="p-8 overflow-y-auto" style={{ height: 'calc(100vh - 5rem)' }}>
                     {renderSection()}
                 </section>
             </main>
 
             <footer className="fixed bottom-0 right-0 p-4 z-50 pointer-events-none">
                 <p className="text-[8px] tracking-[0.3em] uppercase text-gray-700">
-                    © 2024 IG IMPORTS ADMIN PANEL. LUXURY MANAGEMENT SYSTEM.
+                    © 2026 IG IMPORTS
                 </p>
             </footer>
         </div>

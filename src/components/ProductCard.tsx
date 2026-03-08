@@ -7,6 +7,18 @@ interface ProductCardProps {
     product: Product;
 }
 
+// Helper para construir URL completa da imagem
+const getImageUrl = (imageUrl: string | undefined): string => {
+  if (!imageUrl) return '/ig-imports-logo.png';
+  // Se já for URL absoluta (http/https), retorna como está
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+    return imageUrl;
+  }
+  // Se for caminho relativo, adiciona a base da API
+  const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+  return `${API_BASE}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+};
+
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     const originalPrice = product.original_price;
     const hasDiscount = originalPrice && originalPrice > product.price;
@@ -37,7 +49,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
                 {/* Image */}
                 <motion.img
-                    src={product.image_url || '/ig-imports-logo.png'}
+                    src={getImageUrl(product.image_url)}
                     alt={product.name}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     initial={{ opacity: 0 }}

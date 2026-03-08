@@ -3,6 +3,18 @@ import { Category, categoryService, productService } from '../../lib/products';
 import Modal from '../../components/Modal';
 import { useDialog } from '../../context/DialogContext';
 
+// Helper para construir URL completa da imagem
+const getImageUrl = (imageUrl: string | undefined): string => {
+  if (!imageUrl) return '/ig-imports-logo.png';
+  // Se já for URL absoluta (http/https), retorna como está
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+    return imageUrl;
+  }
+  // Se for caminho relativo, adiciona a base da API
+  const API_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+  return `${API_BASE}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+};
+
 const AdminCategories: React.FC = () => {
     const { error } = useDialog();
     const [categories, setCategories] = useState<Category[]>([]);
@@ -173,7 +185,7 @@ const AdminCategories: React.FC = () => {
                             <div className="w-16 h-16 bg-card-dark border border-white/5 overflow-hidden">
                                 {category.image_url ? (
                                     <img
-                                        src={category.image_url}
+                                        src={getImageUrl(category.image_url)}
                                         alt={category.name}
                                         className="w-full h-full object-cover"
                                     />
