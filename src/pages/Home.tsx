@@ -4,6 +4,8 @@ import { IMAGES } from '../constants';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import ProductCard from '../components/ProductCard';
+import { Product, productService } from '../lib/products';
 
 const JERSEYS = [
   "/hero-jersey-removebg-preview.png",
@@ -18,30 +20,48 @@ const Home: React.FC = () => {
   const yHero = useTransform(scrollY, [0, 500], [0, 200]);
   const opacityHero = useTransform(scrollY, [0, 300], [1, 0]);
   const [currentJerseyIndex, setCurrentJerseyIndex] = useState(0);
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
 
   const location = useLocation();
 
   useEffect(() => {
-    // Handle scroll from navigation state
     if (location.state && (location.state as any).scrollTo) {
       const scrollToId = (location.state as any).scrollTo;
       const element = document.getElementById(scrollToId);
       if (element) {
         setTimeout(() => {
           element.scrollIntoView({ behavior: 'smooth' });
-        }, 100); // Small delay to ensure render
+        }, 100);
       }
-      // Clear state to avoid scrolling on refresh? 
-      // Window.history.replaceState({}, document.title)
     }
   }, [location]);
-
 
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentJerseyIndex((prev) => (prev + 1) % JERSEYS.length);
     }, 5000);
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const loadFeatured = async () => {
+      try {
+        const products = await productService.getAll({ status: 'active', featured: true });
+        // Se não houver destaque, pegar os 4 primeiros ativos
+        if (products.length === 0) {
+          const all = await productService.getAll({ status: 'active' });
+          setFeaturedProducts(all.slice(0, 4));
+        } else {
+          setFeaturedProducts(products.slice(0, 4));
+        }
+      } catch {
+        setFeaturedProducts([]);
+      } finally {
+        setLoadingProducts(false);
+      }
+    };
+    loadFeatured();
   }, []);
 
   const scrollToSection = (id: string) => {
@@ -60,14 +80,12 @@ const Home: React.FC = () => {
     >
       <Navbar />
 
-      {/* Radical Hero Section */}
+      {/* Hero Section */}
       <header id="hero" className="relative h-screen w-full overflow-hidden flex items-center bg-background-dark perspective-1000">
-        {/* Background Elements - Luxury Image */}
         <div className="absolute inset-0 bg-black z-0">
           <div className="absolute inset-0 bg-linear-to-t from-black via-black/80 to-transparent z-10"></div>
           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150 mix-blend-overlay z-20"></div>
 
-          {/* Dynamic Jersey - Parallax & Float & Morph */}
           <motion.div
             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 md:translate-x-0 md:left-auto md:right-[5%] z-50 w-[120vw] sm:w-[80vw] md:w-[45vw] max-w-137.5 aspect-square pointer-events-none flex items-center justify-center opacity-40 md:opacity-100 mix-blend-screen md:mix-blend-normal mt-10 md:mt-0"
           >
@@ -88,7 +106,6 @@ const Home: React.FC = () => {
 
         <div className="relative z-10 max-w-480 mx-auto px-6 sm:px-12 w-full pt-20 h-full flex flex-col justify-center items-start">
           <div className="flex flex-col items-center justify-center h-full text-center md:text-left md:items-start w-full md:w-1/2 mr-auto">
-            {/* Text Content - Left Aligned Luxury Layout */}
             <div className="flex flex-col items-center md:items-start relative">
               <motion.div
                 initial={{ opacity: 0, x: -50 }}
@@ -101,7 +118,6 @@ const Home: React.FC = () => {
                   <span className="text-primary text-xs font-bold tracking-[0.4em] uppercase">Coleção Exclusiva</span>
                   <span className="h-px w-12 bg-primary/50"></span>
                 </div>
-                {/* Text with backdrop blur to stand out against jersey */}
                 <h1 className="text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-display font-bold text-white leading-[0.9] tracking-tighter mb-8 relative text-center md:text-left">
                   VISTA A <br />
                   <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-gold-light italic relative inline-block">
@@ -132,7 +148,6 @@ const Home: React.FC = () => {
           </div>
         </div>
 
-        {/* Scroll Indicator */}
         <motion.div
           onClick={() => scrollToSection('philosophie')}
           className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-4 z-20 cursor-pointer hover:scale-110 transition-transform"
@@ -148,7 +163,7 @@ const Home: React.FC = () => {
         </motion.div>
       </header>
 
-      {/* Philosophy / Coming Soon Section */}
+      {/* Philosophy Section */}
       <section id="philosophie" className="py-32 bg-background-dark relative z-20 overflow-hidden min-h-[50vh] flex items-center justify-center">
         <div className="absolute top-0 right-0 w-125 h-125 bg-primary/5 blur-[120px] rounded-full pointer-events-none"></div>
         <div className="absolute bottom-0 left-0 w-125 h-125 bg-primary/5 blur-[120px] rounded-full pointer-events-none"></div>
@@ -174,6 +189,69 @@ const Home: React.FC = () => {
               <Link to="/catalog" className="text-white hover:text-primary transition-colors text-xs tracking-widest uppercase border-b border-primary pb-1">Ver Produtos Disponíveis</Link>
             </div>
           </motion.div>
+        </div>
+      </section>
+
+      {/* Featured Products Section */}
+      <section className="py-20 bg-background-dark relative z-20">
+        <div className="max-w-480 mx-auto px-6 sm:px-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="flex items-end justify-between mb-12"
+          >
+            <div>
+              <span className="text-primary text-xs font-bold tracking-[0.5em] uppercase mb-3 block">Seleção Especial</span>
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-white">
+                PRODUTOS EM <span className="text-primary">DESTAQUE</span>
+              </h2>
+            </div>
+            <Link
+              to="/catalog"
+              className="text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-primary transition-colors flex items-center gap-1 hidden sm:flex"
+            >
+              Ver todos
+              <span className="material-symbols-outlined text-sm">arrow_forward</span>
+            </Link>
+          </motion.div>
+
+          {loadingProducts ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
+              {[1, 2, 3, 4].map((n) => (
+                <div key={n} className="animate-pulse">
+                  <div className="bg-gray-800 aspect-4/5 mb-4"></div>
+                  <div className="h-4 bg-gray-800 w-3/4 mb-2"></div>
+                  <div className="h-4 bg-gray-800 w-1/4"></div>
+                </div>
+              ))}
+            </div>
+          ) : featuredProducts.length > 0 ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12"
+            >
+              {featuredProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </motion.div>
+          ) : (
+            <div className="text-center py-16 text-gray-600">
+              <span className="material-symbols-outlined text-5xl mb-4 block">inventory_2</span>
+              <p className="text-sm">Novos produtos em breve</p>
+            </div>
+          )}
+
+          <div className="text-center mt-12 sm:hidden">
+            <Link
+              to="/catalog"
+              className="text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-primary transition-colors"
+            >
+              Ver todos os produtos →
+            </Link>
+          </div>
         </div>
       </section>
 

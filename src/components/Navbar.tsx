@@ -3,12 +3,14 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { IMAGES } from '../constants';
 import { NavItem } from '../types';
 import { useCartStore } from '../store/cartStore';
+import { useAuthStore } from '../store/authStore';
 
 const Navbar: React.FC = () => {
     const [scrolled, setScrolled] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
     const { itemCount, openCart } = useCartStore();
+    const { isAuthenticated, user, logout } = useAuthStore();
 
     useEffect(() => {
         const handleScroll = () => {
@@ -34,6 +36,11 @@ const Navbar: React.FC = () => {
         }
     };
 
+    const handleLogout = async () => {
+        await logout();
+        navigate('/');
+    };
+
     const navLinks: NavItem[] = [
         { label: "Início", href: "hero" },
         {
@@ -49,7 +56,6 @@ const Navbar: React.FC = () => {
         { label: "Seleções", href: "/catalog?category=selecoes" },
         { label: "Brasileirão", href: "/catalog?category=brasileirao" },
         { label: "Outros", href: "/catalog?category=outros" },
-        { label: "Área do Cliente", href: "/client-area" },
     ];
 
     const count = itemCount();
@@ -96,7 +102,7 @@ const Navbar: React.FC = () => {
                             </div>
                         ))}
                     </div>
-                    <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-4">
                         <button className="text-white hover:text-primary transition-colors">
                             <span className="material-symbols-outlined font-light text-2xl">search</span>
                         </button>
@@ -108,6 +114,49 @@ const Navbar: React.FC = () => {
                                 </span>
                             )}
                         </button>
+
+                        {/* Auth area */}
+                        {isAuthenticated ? (
+                            <div className="relative group">
+                                <button className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-primary border border-primary/30 px-3 py-2 hover:bg-primary/10 transition-all">
+                                    <span className="material-symbols-outlined text-base">person</span>
+                                    <span className="hidden sm:inline">{user?.fullName?.split(' ')[0] || 'Admin'}</span>
+                                </button>
+                                <div className="absolute top-full right-0 bg-background-dark border border-white/10 py-2 min-w-40 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                                    {user?.role === 'admin' && (
+                                        <Link
+                                            to="/admin"
+                                            className="flex items-center gap-2 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
+                                        >
+                                            <span className="material-symbols-outlined text-sm">dashboard</span>
+                                            Painel Admin
+                                        </Link>
+                                    )}
+                                    <Link
+                                        to="/client-area"
+                                        className="flex items-center gap-2 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
+                                    >
+                                        <span className="material-symbols-outlined text-sm">manage_accounts</span>
+                                        Minha Conta
+                                    </Link>
+                                    <button
+                                        onClick={handleLogout}
+                                        className="flex items-center gap-2 w-full px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-red-400 hover:text-red-300 hover:bg-white/5 transition-colors"
+                                    >
+                                        <span className="material-symbols-outlined text-sm">logout</span>
+                                        Sair
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <Link
+                                to="/login"
+                                className="text-[10px] font-bold uppercase tracking-widest text-gray-300 hover:text-primary transition-colors flex items-center gap-1"
+                            >
+                                <span className="material-symbols-outlined text-base">person</span>
+                                <span className="hidden sm:inline">Entrar</span>
+                            </Link>
+                        )}
                     </div>
                 </div>
             </div>
@@ -116,3 +165,4 @@ const Navbar: React.FC = () => {
 };
 
 export default Navbar;
+

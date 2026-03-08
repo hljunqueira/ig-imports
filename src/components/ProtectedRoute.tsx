@@ -11,15 +11,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     const location = useLocation();
 
     useEffect(() => {
-        // Só verifica auth uma vez
         if (!hasCheckedAuth) {
             checkAuth();
         }
     }, [hasCheckedAuth, checkAuth]);
 
-    console.log('[PROTECTED_ROUTE] Estado:', { isAuthenticated, isLoading, hasCheckedAuth });
-
-    if (isLoading) {
+    // Aguarda verificação antes de redirecionar
+    if (isLoading || !hasCheckedAuth) {
         return (
             <div className="min-h-screen bg-background-dark flex items-center justify-center">
                 <div className="flex flex-col items-center gap-4">
@@ -33,12 +31,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     }
 
     if (!isAuthenticated) {
-        console.log('[PROTECTED_ROUTE] Não autenticado, redirecionando para login');
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
-    console.log('[PROTECTED_ROUTE] Autenticado, renderizando children');
     return <>{children}</>;
 };
 
 export default ProtectedRoute;
+

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Catalog from './pages/Catalog';
@@ -10,13 +10,13 @@ import ProtectedRoute from './components/ProtectedRoute';
 import CartDrawer from './components/CartDrawer';
 import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
+import { useAuthStore } from './store/authStore';
 
 const AnimatedRoutes: React.FC = () => {
   const location = useLocation();
 
   return (
     <AnimatePresence mode="wait">
-      {/* Wrapper div carries the key for transition */}
       <div key={location.pathname}>
         <Routes location={location}>
           <Route path="/" element={<Home />} />
@@ -48,6 +48,13 @@ const AnimatedRoutes: React.FC = () => {
 };
 
 const App: React.FC = () => {
+  const { checkAuth } = useAuthStore();
+
+  useEffect(() => {
+    // Verifica auth ao iniciar a aplicação (token salvo no localStorage)
+    checkAuth();
+  }, []);
+
   return (
     <HashRouter>
       <AnimatedRoutes />
