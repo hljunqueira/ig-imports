@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { IMAGES } from '../constants';
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import ProductCard from '../components/ProductCard';
@@ -16,9 +16,6 @@ const JERSEYS = [
 ];
 
 const Home: React.FC = () => {
-  const { scrollY } = useScroll();
-  const yHero = useTransform(scrollY, [0, 500], [0, 200]);
-  const opacityHero = useTransform(scrollY, [0, 300], [1, 0]);
   const [currentJerseyIndex, setCurrentJerseyIndex] = useState(0);
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
