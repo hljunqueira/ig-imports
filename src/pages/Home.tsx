@@ -355,16 +355,20 @@ const Home: React.FC = () => {
       </section>
 
       {/* Reviews Section */}
-      <section id="reviews" className="py-20 bg-background-dark relative z-20">
+      <section id="reviews" className="py-24 bg-background-dark relative z-20">
+        {/* Divisor superior */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
+
         <div className="max-w-480 mx-auto px-6 sm:px-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="text-center mb-12"
+            className="text-center mb-14"
           >
-            <h2 className="text-4xl md:text-5xl font-display font-bold text-white">
+            <span className="text-primary text-xs font-bold tracking-[0.5em] uppercase mb-3 block">Depoimentos</span>
+            <h2 className="text-3xl md:text-4xl font-display font-bold text-white">
               O QUE DIZEM NOSSOS <span className="text-primary">CLIENTES</span>
             </h2>
           </motion.div>
@@ -372,10 +376,14 @@ const Home: React.FC = () => {
           {loadingReviews ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {[1, 2, 3, 4].map((n) => (
-                <div key={n} className="animate-pulse bg-gray-800 p-6 rounded-sm">
-                  <div className="h-4 bg-gray-700 w-1/2 mb-4"></div>
+                <div key={n} className="animate-pulse bg-card-dark border border-white/5 p-6">
+                  <div className="flex gap-1 mb-4">
+                    {[1,2,3,4,5].map(s => <div key={s} className="h-3 w-3 bg-gray-700 rounded-sm"></div>)}
+                  </div>
                   <div className="h-3 bg-gray-700 w-full mb-2"></div>
-                  <div className="h-3 bg-gray-700 w-3/4"></div>
+                  <div className="h-3 bg-gray-700 w-3/4 mb-2"></div>
+                  <div className="h-3 bg-gray-700 w-1/2 mb-6"></div>
+                  <div className="h-3 bg-gray-700 w-1/3"></div>
                 </div>
               ))}
             </div>
@@ -385,103 +393,137 @@ const Home: React.FC = () => {
               animate={{ opacity: 1 }}
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
             >
-              {reviews.map((review) => (
-                <div key={review.id} className="bg-card-dark border border-white/5 p-6">
-                  <div className="flex items-center gap-1 mb-4">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <span
-                        key={star}
-                        className={`material-symbols-outlined text-sm ${
-                          star <= review.rating ? 'text-primary' : 'text-gray-600'
-                        }`}
-                      >
-                        star
-                      </span>
-                    ))}
+              {reviews.map((review, i) => (
+                <motion.div
+                  key={review.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: i * 0.1 }}
+                  className="bg-card-dark border border-white/5 p-6 flex flex-col hover:border-primary/20 transition-colors"
+                >
+                  {/* Aspas decorativas */}
+                  <span className="text-primary/20 font-display text-5xl leading-none mb-2 select-none">"</span>
+                  <p className="text-gray-300 text-sm mb-5 line-clamp-4 grow">{review.comment}</p>
+                  <div className="border-t border-white/5 pt-4">
+                    <div className="flex items-center gap-1 mb-2">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <span
+                          key={star}
+                          className={`material-symbols-outlined text-sm ${
+                            star <= review.rating ? 'text-primary' : 'text-gray-700'
+                          }`}
+                          style={{ fontSize: '14px' }}
+                        >
+                          star
+                        </span>
+                      ))}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-white text-xs font-bold uppercase tracking-wider">{review.customer_name}</span>
+                      {review.is_featured && (
+                        <span className="text-primary text-[9px] uppercase tracking-widest">Destaque</span>
+                      )}
+                    </div>
                   </div>
-                  <p className="text-gray-300 text-sm mb-4 line-clamp-3">{review.comment}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-white text-xs font-bold">{review.customer_name}</span>
-                    {review.is_featured && (
-                      <span className="text-primary text-[10px] uppercase tracking-widest">Destaque</span>
-                    )}
-                  </div>
-                </div>
+                </motion.div>
               ))}
             </motion.div>
           ) : (
-            <div className="text-center py-16 text-gray-600">
-              <span className="material-symbols-outlined text-5xl mb-4 block">reviews</span>
-              <p className="text-sm">Avaliações em breve</p>
+            <div className="text-center py-16 border border-white/5 bg-card-dark">
+              <span className="material-symbols-outlined text-5xl text-gray-700 mb-4 block">format_quote</span>
+              <p className="text-gray-600 text-sm uppercase tracking-widest">Avaliações em breve</p>
             </div>
           )}
         </div>
+
+        {/* Divisor inferior */}
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/5 to-transparent"></div>
       </section>
 
       {/* Request Product Section */}
-      <section id="encomenda" className="py-20 bg-background-dark relative z-20">
+      <section id="encomenda" className="py-24 bg-background-dark relative z-20">
         <div className="max-w-480 mx-auto px-6 sm:px-12">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+
+          {/* Cabeçalho centralizado */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-14"
+          >
+            <span className="text-primary text-xs font-bold tracking-[0.5em] uppercase mb-3 block">Não encontrou?</span>
+            <h2 className="text-3xl md:text-4xl font-display font-bold text-white">
+              SOLICITE UMA <span className="text-primary">ENCOMENDA</span>
+            </h2>
+            <p className="text-gray-400 text-sm mt-4 max-w-lg mx-auto">
+              Descreva o que você procura e nossa equipe entrará em contato com um orçamento personalizado.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-10 items-start">
+
+            {/* Benefícios — coluna menor */}
             <motion.div
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
+              className="lg:col-span-2 space-y-6"
             >
-              <span className="text-primary text-xs font-bold tracking-[0.5em] uppercase mb-3 block">Não encontrou?</span>
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-white mb-6">
-                SOLICITE UMA <span className="text-primary">ENCOMENDA</span>
-              </h2>
-              <p className="text-gray-400 mb-8">
-                Não encontrou o produto que procura? Descreva o que você precisa e nossa equipe 
-                entrará em contato com um orçamento personalizado.
-              </p>
-              
-              <div className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <span className="material-symbols-outlined text-primary text-2xl">check_circle</span>
-                  <span className="text-gray-300 text-sm">Produtos exclusivos e importados</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span className="material-symbols-outlined text-primary text-2xl">check_circle</span>
-                  <span className="text-gray-300 text-sm">Orçamento em até 24h</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span className="material-symbols-outlined text-primary text-2xl">check_circle</span>
-                  <span className="text-gray-300 text-sm">Melhor preço garantido</span>
-                </div>
-              </div>
+              {[
+                { icon: 'verified', title: 'Produtos Exclusivos', desc: 'Importados direto da fonte com autenticidade garantida' },
+                { icon: 'schedule', title: 'Orçamento em 24h', desc: 'Resposta rápida com o melhor preço disponível' },
+                { icon: 'local_shipping', title: 'Entrega Garantida', desc: 'Rastreamento completo do pedido até sua porta' },
+              ].map((item, i) => (
+                <motion.div
+                  key={item.icon}
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: i * 0.1 }}
+                  className="flex items-start gap-4 p-5 bg-card-dark border border-white/5 hover:border-primary/20 transition-colors"
+                >
+                  <span className="material-symbols-outlined text-primary text-2xl shrink-0 mt-0.5">{item.icon}</span>
+                  <div>
+                    <p className="text-white text-sm font-bold mb-1">{item.title}</p>
+                    <p className="text-gray-500 text-xs leading-relaxed">{item.desc}</p>
+                  </div>
+                </motion.div>
+              ))}
             </motion.div>
 
+            {/* Formulário — coluna maior */}
             <motion.div
               initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="bg-card-dark border border-white/5 p-8"
+              className="lg:col-span-3 bg-card-dark border border-white/5 p-8"
             >
               {requestSuccess ? (
-                <div className="text-center py-8">
-                  <span className="material-symbols-outlined text-5xl text-emerald-500 mb-4">check_circle</span>
+                <div className="text-center py-16">
+                  <span className="material-symbols-outlined text-6xl text-emerald-500 mb-4 block">check_circle</span>
                   <h3 className="text-xl font-bold text-white mb-2">Solicitação Enviada!</h3>
-                  <p className="text-gray-400 text-sm">Entraremos em contato em breve.</p>
+                  <p className="text-gray-400 text-sm">Entraremos em contato em breve com seu orçamento.</p>
                 </div>
               ) : (
-                <form onSubmit={handleRequestSubmit} className="space-y-4">
+                <form onSubmit={handleRequestSubmit} className="space-y-5">
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Nome</label>
+                    <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Nome *</label>
                     <input
                       type="text"
                       required
                       value={requestForm.customer_name}
                       onChange={(e) => setRequestForm({ ...requestForm, customer_name: e.target.value })}
                       className="w-full bg-background-dark border border-white/10 px-4 py-3 text-sm text-white focus:border-primary outline-none transition-colors"
-                      placeholder="Seu nome"
+                      placeholder="Seu nome completo"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Telefone</label>
+                      <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Telefone *</label>
                       <input
                         type="tel"
                         required
@@ -503,14 +545,14 @@ const Home: React.FC = () => {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Descrição do Produto</label>
+                    <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Descrição do Produto *</label>
                     <textarea
                       required
                       rows={3}
                       value={requestForm.product_description}
                       onChange={(e) => setRequestForm({ ...requestForm, product_description: e.target.value })}
                       className="w-full bg-background-dark border border-white/10 px-4 py-3 text-sm text-white focus:border-primary outline-none transition-colors resize-none"
-                      placeholder="Descreva o produto que você procura..."
+                      placeholder="Descreva o produto: clube, temporada, tamanho, cor..."
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -535,7 +577,7 @@ const Home: React.FC = () => {
                       />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-3 gap-4">
                     <div>
                       <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Quantidade</label>
                       <input
@@ -547,7 +589,7 @@ const Home: React.FC = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Orçamento Máx (R$)</label>
+                      <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Orçamento Máx</label>
                       <input
                         type="number"
                         min="0"
@@ -555,27 +597,27 @@ const Home: React.FC = () => {
                         value={requestForm.max_budget}
                         onChange={(e) => setRequestForm({ ...requestForm, max_budget: e.target.value })}
                         className="w-full bg-background-dark border border-white/10 px-4 py-3 text-sm text-white focus:border-primary outline-none transition-colors"
-                        placeholder="0,00"
+                        placeholder="R$ 0,00"
                       />
                     </div>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Urgência</label>
-                    <select
-                      value={requestForm.urgency}
-                      onChange={(e) => setRequestForm({ ...requestForm, urgency: e.target.value as any })}
-                      className="w-full bg-background-dark border border-white/10 px-4 py-3 text-sm text-white focus:border-primary outline-none transition-colors"
-                    >
-                      <option value="low">Baixa</option>
-                      <option value="normal">Normal</option>
-                      <option value="high">Alta</option>
-                      <option value="urgent">Urgente</option>
-                    </select>
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Urgência</label>
+                      <select
+                        value={requestForm.urgency}
+                        onChange={(e) => setRequestForm({ ...requestForm, urgency: e.target.value as any })}
+                        className="w-full bg-background-dark border border-white/10 px-4 py-3 text-sm text-white focus:border-primary outline-none transition-colors"
+                      >
+                        <option value="low">Baixa</option>
+                        <option value="normal">Normal</option>
+                        <option value="high">Alta</option>
+                        <option value="urgent">Urgente</option>
+                      </select>
+                    </div>
                   </div>
                   <button
                     type="submit"
                     disabled={submittingRequest}
-                    className="w-full bg-primary text-black py-4 text-xs font-bold uppercase tracking-[0.2em] hover:bg-white transition-colors disabled:opacity-50"
+                    className="w-full bg-primary text-black py-4 text-xs font-bold uppercase tracking-[0.2em] hover:bg-white transition-colors disabled:opacity-50 mt-2"
                   >
                     {submittingRequest ? 'Enviando...' : 'Solicitar Encomenda'}
                   </button>

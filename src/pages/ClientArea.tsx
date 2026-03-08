@@ -139,6 +139,15 @@ const ClientArea: React.FC = () => {
                                 </p>
                             </div>
 
+                            {/* Info para novos clientes */}
+                            <div className="bg-primary/5 border border-primary/20 px-4 py-3 mb-6 flex gap-3 items-start">
+                                <span className="material-symbols-outlined text-primary text-sm shrink-0 mt-0.5">info</span>
+                                <p className="text-xs text-gray-400 leading-relaxed">
+                                    Não precisa criar conta. Use o mesmo <span className="text-white">email ou telefone</span> informado ao finalizar sua compra.
+                                    {' '}<a href="/#/catalog" className="text-primary hover:underline">Ainda não comprou? Veja nosso catálogo.</a>
+                                </p>
+                            </div>
+
                             <form onSubmit={handleSearchOrders} className="space-y-6">
                                 <div>
                                     <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Email</label>

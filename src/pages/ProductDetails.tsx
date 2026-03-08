@@ -50,6 +50,7 @@ const ProductDetails: React.FC = () => {
 
         addItem({
             id: product.id,
+            slug: product.slug,
             name: product.name,
             price: product.price,
             image: product.image_url || '',

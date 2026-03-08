@@ -67,18 +67,38 @@ const CartDrawer: React.FC = () => {
                                             key={`${item.id}-${item.size}-${index}`}
                                             className="flex gap-4 p-4 bg-card-dark border border-white/5"
                                         >
-                                            {/* Image */}
+                                            {/* Image — clicável se tiver slug */}
                                             <div className="w-20 h-24 bg-background-dark border border-white/5 overflow-hidden shrink-0">
-                                                <img
-                                                    src={item.image || '/ig-imports-logo.png'}
-                                                    alt={item.name}
-                                                    className="w-full h-full object-cover"
-                                                />
+                                                {item.slug ? (
+                                                    <Link to={`/product/${item.slug}`} onClick={closeCart}>
+                                                        <img
+                                                            src={item.image || '/ig-imports-logo.png'}
+                                                            alt={item.name}
+                                                            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                                                        />
+                                                    </Link>
+                                                ) : (
+                                                    <img
+                                                        src={item.image || '/ig-imports-logo.png'}
+                                                        alt={item.name}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                )}
                                             </div>
 
                                             {/* Details */}
                                             <div className="flex-1 min-w-0">
-                                                <h3 className="text-sm font-semibold truncate">{item.name}</h3>
+                                                {item.slug ? (
+                                                    <Link
+                                                        to={`/product/${item.slug}`}
+                                                        onClick={closeCart}
+                                                        className="text-sm font-semibold truncate block hover:text-primary transition-colors"
+                                                    >
+                                                        {item.name}
+                                                    </Link>
+                                                ) : (
+                                                    <h3 className="text-sm font-semibold truncate">{item.name}</h3>
+                                                )}
                                                 {item.size && (
                                                     <p className="text-xs text-gray-500">Tamanho: {item.size}</p>
                                                 )}

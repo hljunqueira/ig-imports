@@ -7,24 +7,24 @@ import Footer from '../components/Footer';
 const Philosophy: React.FC = () => {
     const values = [
         {
-            icon: 'verified',
-            title: 'Qualidade Premium',
-            description: 'Trabalhamos apenas com produtos de alta qualidade, garantindo acabamento impecável e materiais duráveis que proporcionam conforto e estilo.'
+            icon: 'checkroom',
+            title: 'Camisas Originais 1:1',
+            description: 'Cada camisa é selecionada com rigor: tecidos, patches e detalhes idênticos ao produto oficial. Qualidade que você sente ao tocar.'
         },
         {
-            icon: 'local_shipping',
-            title: 'Entrega Rápida',
-            description: 'Enviamos para todo o Brasil com agilidade e segurança. Seu pedido é nossa prioridade e cuidamos de cada detalhe do envio.'
+            icon: 'chat',
+            title: 'Disponibilidade pelo WhatsApp',
+            description: 'Antes de comprar, verifique a disponibilidade do produto diretamente pelo WhatsApp. Atendimento rápido e personalizado para você.'
         },
         {
-            icon: 'support_agent',
-            title: 'Atendimento Personalizado',
-            description: 'Nossa equipe está sempre pronta para ajudar. Oferecemos suporte dedicado para garantir a melhor experiência de compra.'
+            icon: 'inventory_2',
+            title: 'Encomendas Sob Pedido',
+            description: 'Não achou o clube ou a temporada que procura? Fazemos encomendas personalizadas. Basta descrever e nós buscamos para você.'
         },
         {
-            icon: 'workspace_premium',
-            title: 'Produtos Exclusivos',
-            description: 'Seleção única das camisas mais desejadas do futebol mundial. Encontre aqui as peças que você não encontra em qualquer lugar.'
+            icon: 'public',
+            title: 'Clubes do Mundo Todo',
+            description: 'Do futebol brasileiro às ligas europeias: Premier League, La Liga, Serie A e muito mais. As camisas dos maiores clubes em um só lugar.'
         }
     ];
 
@@ -86,11 +86,32 @@ const Philosophy: React.FC = () => {
                                 whileInView={{ opacity: 1, x: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ duration: 0.6 }}
-                                className="relative"
+                                className="relative flex items-center justify-center min-h-80"
                             >
-                                <div className="aspect-square bg-linear-to-br from-primary/20 to-transparent border border-primary/20 flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-8xl text-primary/40">sports_soccer</span>
-                                </div>
+                                {/* Anéis de pulsação */}
+                                <motion.div
+                                    animate={{ scale: [1, 1.15, 1], opacity: [0.2, 0.05, 0.2] }}
+                                    transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                                    className="absolute w-72 h-72 rounded-full border border-primary/30"
+                                />
+                                <motion.div
+                                    animate={{ scale: [1, 1.25, 1], opacity: [0.12, 0.03, 0.12] }}
+                                    transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
+                                    className="absolute w-88 h-88 rounded-full border border-primary/20"
+                                />
+                                <motion.div
+                                    animate={{ scale: [1, 1.35, 1], opacity: [0.07, 0.01, 0.07] }}
+                                    transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+                                    className="absolute w-[28rem] h-[28rem] rounded-full border border-primary/10"
+                                />
+                                {/* Logo pulsante */}
+                                <motion.img
+                                    src="/ig-imports-logo.png"
+                                    alt="IG Imports"
+                                    animate={{ scale: [1, 1.06, 1] }}
+                                    transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                                    className="relative z-10 w-56 h-56 object-contain drop-shadow-[0_0_50px_rgba(212,175,55,0.35)]"
+                                />
                             </motion.div>
                         </div>
                     </div>
