@@ -1,0 +1,73 @@
+# ========================================
+# IG Imports - Supabase Docker Configuration
+# ========================================
+# Copy this file to .env and update all values for production
+
+# --- CONFIGURAÇÃO BÁSICA ---
+POSTGRES_PASSWORD=CHANGE_ME_IN_PRODUCTION_USE_STRONG_PASSWORD
+API_EXTERNAL_URL=http://your-server-ip:8000
+DASHBOARD_USERNAME=admin
+DASHBOARD_PASSWORD=CHANGE_ME_IN_PRODUCTION
+
+# --- SEGREDOS CRÍTICOS (Gere novos valores para produção) ---
+# Para gerar JWT_SECRET: openssl rand -hex 32
+JWT_SECRET=generate_with_openssl_rand_hex_32
+SECRET_KEY_BASE=generate_with_mix_phoenix_gen_secret
+VAULT_ENC_KEY=generate_32_char_random_string
+PG_META_CRYPTO_KEY=generate_32_char_random_string
+
+# --- CHAVES JWT (Gere com o JWT_SECRET acima) ---
+# Use https://supabase.com/docs/guides/self-hosting#api-keys para gerar
+ANON_KEY=your_generated_anon_key_here
+SERVICE_ROLE_KEY=your_generated_service_role_key_here
+
+# --- SERVIÇOS ---
+DB_PORT=5432
+POSTGRES_PORT=5432
+POSTGRES_DB=postgres
+POSTGRES_HOST=db
+STUDIO_DEFAULT_ORGANIZATION=Your Organization
+STUDIO_DEFAULT_PROJECT=Your Project
+POOLER_PROXY_PORT_TRANSACTION=6543
+
+# --- VARIÁVEIS DE SISTEMA ---
+DOCKER_SOCKET_LOCATION=/var/run/docker.sock
+SITE_URL=http://your-server-ip:3000
+SUPABASE_PUBLIC_URL=http://your-server-ip:8000
+
+# --- LOGFLARE & ANALYTICS ---
+LOGFLARE_PUBLIC_ACCESS_TOKEN=your_logflare_token_here
+LOGFLARE_PRIVATE_ACCESS_TOKEN=your_logflare_token_here
+JWT_EXPIRY=3600
+PGRST_DB_SCHEMAS=public,storage,graphql_public
+IMGPROXY_ENABLE_WEBP_DETECTION=true
+FUNCTIONS_VERIFY_JWT=false
+
+# --- POOLER & KONG ---
+POOLER_DEFAULT_POOL_SIZE=20
+POOLER_MAX_CLIENT_CONN=100
+POOLER_DB_POOL_SIZE=20
+POOLER_TENANT_ID=tenant_id
+KONG_HTTP_PORT=8000
+KONG_HTTPS_PORT=8443
+
+# --- EMAIL CONFIGURATION (Configure para produção) ---
+SMTP_ADMIN_EMAIL=admin@yourdomain.com
+SMTP_HOST=smtp.yourdomain.com
+SMTP_PORT=587
+SMTP_USER=your_smtp_user
+SMTP_PASS=your_smtp_password
+SMTP_SENDER_NAME=IG Imports
+MAILER_URLPATHS_INVITE=http://your-server-ip:3000/auth/callback
+MAILER_URLPATHS_CONFIRMATION=http://your-server-ip:3000/auth/callback
+MAILER_URLPATHS_RECOVERY=http://your-server-ip:3000/auth/callback
+MAILER_URLPATHS_EMAIL_CHANGE=http://your-server-ip:3000/auth/callback
+
+# --- AUTH SETTINGS ---
+ENABLE_PHONE_SIGNUP=false
+ENABLE_PHONE_AUTOCONFIRM=false
+ENABLE_EMAIL_SIGNUP=true
+ENABLE_EMAIL_AUTOCONFIRM=false
+ENABLE_ANONYMOUS_USERS=false
+DISABLE_SIGNUP=false
+ADDITIONAL_REDIRECT_URLS=

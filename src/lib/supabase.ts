@@ -8,4 +8,15 @@ if (!supabaseUrl || !supabaseKey) {
     console.warn('Supabase URL or Key missing in environment variables. Backend features will not work.');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+export const supabase = createClient(supabaseUrl, supabaseKey, {
+    auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: false,
+    },
+    global: {
+        headers: {
+            'X-Client-Info': 'ig-imports-web',
+        },
+    },
+});

@@ -1,0 +1,73 @@
+# IG Imports - Database Stack (PostgreSQL + Supabase Studio)
+# Project: ig-imports-database
+# Services: PostgreSQL, Studio, Meta
+
+name: ig-imports-database
+
+services:
+  db:
+    container_name: igimports-db
+    image: supabase/postgres:15.8.1.085
+    restart: unless-stopped
+    volumes:
+      - ./volumes/db/data:/var/lib/postgresql/data:Z
+      - ./volumes/db/init:/docker-entrypoint-initdb.d:Z
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-igimports_db}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXP: ${JWT_EXPIRY:-604800}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    networks:
+      - igimports-network
+
+  studio:
+    container_name: igimports-studio
+    image: supabase/studio:2026.01.27-sha-6aa59ff
+    restart: unless-stopped
+    ports:
+      - "${STUDIO_PORT:-3002}:3000"
+    environment:
+      STUDIO_PG_META_URL: http://meta:8080
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      POSTGRES_HOST: db
+      POSTGRES_DB: ${POSTGRES_DB:-igimports_db}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      DEFAULT_ORGANIZATION_NAME: ${STUDIO_DEFAULT_ORGANIZATION:-IG Imports}
+      DEFAULT_PROJECT_NAME: ${STUDIO_DEFAULT_PROJECT:-Production}
+      PG_META_CRYPTO_KEY: ${PG_META_CRYPTO_KEY}
+    depends_on:
+      - db
+      - meta
+    networks:
+      - igimports-network
+
+  meta:
+    container_name: igimports-meta
+    image: supabase/postgres-meta:v0.95.2
+    restart: unless-stopped
+    environment:
+      PG_META_PORT: 8080
+      PG_META_DB_HOST: db
+      PG_META_DB_PORT: ${POSTGRES_PORT:-5432}
+      PG_META_DB_NAME: ${POSTGRES_DB:-igimports_db}
+      PG_META_DB_USER: postgres
+      PG_META_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      CRYPTO_KEY: ${PG_META_CRYPTO_KEY}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - igimports-network
+
+networks:
+  igimports-network:
+    name: igimports-network
+    driver: bridge

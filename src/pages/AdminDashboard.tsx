@@ -1,31 +1,60 @@
-import React, { useState } from 'react';
-import { IMAGES, MOCK_PRODUCTS } from '../constants';
+import React, { useState, useEffect } from 'react';
+import { IMAGES } from '../constants';
 import { DashboardStat } from '../types';
+import { Product, productService } from '../lib/products';
 
 const AdminDashboard: React.FC = () => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [stats, setStats] = useState<DashboardStat[]>([
-    { label: "Total de Itens", value: 142, icon: "app_registration", colorClass: "text-white", iconColorClass: "text-primary/40" },
-    { label: "Em Estoque", value: "1.205", icon: "inventory", colorClass: "text-white", iconColorClass: "text-emerald-500/40" },
-    { label: "Baixo Estoque", value: 12, icon: "warning", colorClass: "text-red-500", iconColorClass: "text-red-500/40" },
-    { label: "Categorias Ativas", value: "08", icon: "category", colorClass: "text-white", iconColorClass: "text-primary/40" },
+    { label: "Total de Itens", value: 0, icon: "app_registration", colorClass: "text-white", iconColorClass: "text-primary/40" },
+    { label: "Em Estoque", value: "0", icon: "inventory", colorClass: "text-white", iconColorClass: "text-emerald-500/40" },
+    { label: "Baixo Estoque", value: 0, icon: "warning", colorClass: "text-red-500", iconColorClass: "text-red-500/40" },
+    { label: "Categorias Ativas", value: "0", icon: "category", colorClass: "text-white", iconColorClass: "text-primary/40" },
   ]);
+
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  const loadProducts = async () => {
+    setLoading(true);
+    try {
+      const data = await productService.getAll();
+      setProducts(data);
+
+      // Update stats based on real data
+      setStats([
+        { label: "Total de Itens", value: data.length, icon: "app_registration", colorClass: "text-white", iconColorClass: "text-primary/40" },
+        { label: "Em Estoque", value: data.reduce((acc, p) => acc + p.stock, 0), icon: "inventory", colorClass: "text-white", iconColorClass: "text-emerald-500/40" },
+        { label: "Baixo Estoque", value: data.filter(p => p.stock < 5).length, icon: "warning", colorClass: "text-red-500", iconColorClass: "text-red-500/40" },
+        { label: "Categorias Ativas", value: new Set(data.map(p => p.category_id)).size, icon: "category", colorClass: "text-white", iconColorClass: "text-primary/40" },
+      ]);
+
+    } catch (error) {
+      console.error("Error loading products:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-        case 'ACTIVE': return 'text-emerald-500';
-        case 'DRAFT': return 'text-amber-500';
-        case 'SOLD_OUT': return 'text-red-500';
-        default: return 'text-gray-500';
+      case 'ACTIVE': return 'text-emerald-500';
+      case 'DRAFT': return 'text-amber-500';
+      case 'SOLD_OUT': return 'text-red-500';
+      default: return 'text-gray-500';
     }
   }
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-        case 'ACTIVE': return 'Ativo';
-        case 'DRAFT': return 'Rascunho';
-        case 'SOLD_OUT': return 'Esgotado';
-        default: return status;
+      case 'ACTIVE': return 'Ativo';
+      case 'DRAFT': return 'Rascunho';
+      case 'SOLD_OUT': return 'Esgotado';
+      default: return status;
     }
   }
 
@@ -125,7 +154,7 @@ const AdminDashboard: React.FC = () => {
         <section className="p-10">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-10">
             {stats.map((stat, index) => (
-                <div key={index} className="bg-card-dark border border-white/5 p-6">
+              <div key={index} className="bg-card-dark border border-white/5 p-6">
                 <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-2">
                   {stat.label}
                 </p>
@@ -217,14 +246,14 @@ const AdminDashboard: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
-                  {MOCK_PRODUCTS.map((product) => (
+                  {products.map((product) => (
                     <tr key={product.id} className="luxury-table-row transition-colors group">
                       <td className="py-5">
                         <div className="w-16 h-20 bg-card-dark border border-white/5 overflow-hidden">
                           <img
                             alt={product.name}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                            src={product.image}
+                            src={product.image_url || 'https://via.placeholder.com/150'}
                           />
                         </div>
                       </td>
@@ -238,12 +267,12 @@ const AdminDashboard: React.FC = () => {
                       </td>
                       <td className="py-5">
                         <span className="text-[10px] text-gray-400 uppercase tracking-widest">
-                          {product.category}
+                          {product.category?.name || 'Sem Categoria'}
                         </span>
                       </td>
                       <td className="py-5">
                         <p className="text-sm font-display font-bold">
-                          R$ {product.price.toFixed(2).replace('.', ',')}
+                          {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.price)}
                         </p>
                       </td>
                       <td className="py-5">

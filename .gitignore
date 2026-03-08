@@ -23,3 +23,36 @@ dist-ssr
 *.sln
 *.sw?
 .vercel
+
+# ========================================
+# SECURITY - Sensitive files (NEVER COMMIT)
+# ========================================
+
+# Environment files with real credentials
+.env
+.env.local
+.env.*.local
+ig-imports.env
+*.env
+
+# Keep example files
+!.env.example
+!supabase_env.example
+
+# Test files with credentials
+test-auth.mjs
+test-*.mjs
+test-*.ts
+check_*.ts
+
+# Docker volumes (may contain data)
+volumes/
+
+# SSL certificates
+*.pem
+*.key
+*.crt
+
+# Database dumps
+*.sql.backup
+*.dump
