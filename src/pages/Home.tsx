@@ -207,7 +207,7 @@ const Home: React.FC = () => {
             </div>
             <Link
               to="/catalog"
-              className="text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-primary transition-colors flex items-center gap-1 hidden sm:flex"
+              className="text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-primary transition-colors items-center gap-1 hidden sm:flex"
             >
               Ver todos
               <span className="material-symbols-outlined text-sm">arrow_forward</span>
