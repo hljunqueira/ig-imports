@@ -1,22 +1,6 @@
 /// <reference types="vite/client" />
-import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+// Supabase não é mais utilizado - backend migrado para Node.js/Express
+// Este arquivo existe apenas para compatibilidade com imports legados
 
-if (!supabaseUrl || !supabaseKey) {
-    console.warn('Supabase URL or Key missing in environment variables. Backend features will not work.');
-}
-
-export const supabase = createClient(supabaseUrl, supabaseKey, {
-    auth: {
-        autoRefreshToken: true,
-        persistSession: true,
-        detectSessionInUrl: false,
-    },
-    global: {
-        headers: {
-            'X-Client-Info': 'ig-imports-web',
-        },
-    },
-});
+export const supabase = null as any;
