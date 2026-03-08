@@ -100,7 +100,7 @@ const ProductDetails: React.FC = () => {
                     >
                         <div className="bg-gray-900 aspect-4/5 rounded-sm overflow-hidden border border-white/5">
                             <img
-                                src={product.image_url || 'https://via.placeholder.com/600x800'}
+                                src={product.image_url || '/ig-imports-logo.png'}
                                 alt={product.name}
                                 className="w-full h-full object-cover"
                             />

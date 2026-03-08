@@ -153,7 +153,7 @@ const Home: React.FC = () => {
           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150 mix-blend-overlay z-20"></div>
 
           <motion.div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 md:translate-x-0 md:left-auto md:right-[5%] z-50 w-[120vw] sm:w-[80vw] md:w-[45vw] max-w-137.5 aspect-square pointer-events-none flex items-center justify-center opacity-40 md:opacity-100 mix-blend-screen md:mix-blend-normal mt-10 md:mt-0"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 md:translate-x-0 md:left-auto md:right-[5%] z-30 w-[120vw] sm:w-[80vw] md:w-[45vw] max-w-137.5 aspect-square pointer-events-none flex items-center justify-center opacity-40 md:opacity-100 mix-blend-screen md:mix-blend-normal mt-10 md:mt-0"
           >
             <AnimatePresence mode='wait'>
               <motion.img
@@ -164,7 +164,7 @@ const Home: React.FC = () => {
                 animate={{ opacity: 1, scale: 1, rotate: 0 }}
                 exit={{ opacity: 0, scale: 1.1, rotate: 2 }}
                 transition={{ duration: 0.8, ease: "circOut" }}
-                className="w-full h-full object-contain drop-shadow-[0_20px_50px_rgba(212,175,55,0.15)] absolute inset-0 z-50"
+                className="w-full h-full object-contain drop-shadow-[0_20px_50px_rgba(212,175,55,0.15)] absolute inset-0 z-30"
               />
             </AnimatePresence>
           </motion.div>
@@ -202,20 +202,20 @@ const Home: React.FC = () => {
                   >
                     Ver Catálogo
                   </Link>
-                  <button
-                    onClick={() => scrollToSection('philosophie')}
+                  <Link
+                    to="/philosophy"
                     className="border border-white/20 text-white px-12 py-4 text-xs font-bold uppercase tracking-[0.2em] hover:bg-white/5 transition-colors duration-300 backdrop-blur-md bg-black/30"
                   >
                     Nossa Filosofia
-                  </button>
+                  </Link>
                 </div>
               </motion.div>
             </div>
           </div>
         </div>
 
-        <motion.div
-          onClick={() => scrollToSection('philosophie')}
+        <Link
+          to="/philosophy"
           className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-4 z-20 cursor-pointer hover:scale-110 transition-transform"
         >
           <motion.span
@@ -226,37 +226,8 @@ const Home: React.FC = () => {
           >
             keyboard_arrow_down
           </motion.span>
-        </motion.div>
+        </Link>
       </header>
-
-      {/* Philosophy Section */}
-      <section id="philosophie" className="py-32 bg-background-dark relative z-20 overflow-hidden min-h-[50vh] flex items-center justify-center">
-        <div className="absolute top-0 right-0 w-125 h-125 bg-primary/5 blur-[120px] rounded-full pointer-events-none"></div>
-        <div className="absolute bottom-0 left-0 w-125 h-125 bg-primary/5 blur-[120px] rounded-full pointer-events-none"></div>
-
-        <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
-            <span className="text-primary text-xs font-bold tracking-[0.5em] uppercase mb-6 block">O Futuro Chegou</span>
-            <h2 className="text-4xl md:text-6xl font-display font-bold text-white mb-8 leading-tight">
-              A MAIOR LOJA VIRTUAL DE <br />
-              <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-gold-light italic">CAMISAS PREMIUM</span>
-            </h2>
-            <p className="text-gray-400 text-lg md:text-xl font-light max-w-2xl mx-auto leading-relaxed mb-12">
-              Explore nosso acervo exclusivo das peças mais cobiçadas do futebol mundial.
-              Qualidade 1:1, detalhes impecáveis e a experiência de compra que você merece.
-            </p>
-
-            <div className="inline-flex flex-col items-center gap-4">
-              <Link to="/catalog" className="text-white hover:text-primary transition-colors text-xs tracking-widest uppercase border-b border-primary pb-1">Ver Produtos Disponíveis</Link>
-            </div>
-          </motion.div>
-        </div>
-      </section>
 
       {/* Categories Section */}
       <section id="categories" className="py-20 bg-background-dark relative z-20">
@@ -321,7 +292,7 @@ const Home: React.FC = () => {
       </section>
 
       {/* Featured Products Section */}
-      <section className="py-20 bg-background-dark relative z-20">
+      <section id="catalog" className="py-20 bg-background-dark relative z-20">
         <div className="max-w-480 mx-auto px-6 sm:px-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -393,9 +364,8 @@ const Home: React.FC = () => {
             transition={{ duration: 0.6 }}
             className="text-center mb-12"
           >
-            <span className="text-primary text-xs font-bold tracking-[0.5em] uppercase mb-3 block">O que dizem nossos clientes</span>
-            <h2 className="text-3xl md:text-4xl font-display font-bold text-white">
-              AVALIAÇÕES <span className="text-primary">REAIS</span>
+            <h2 className="text-4xl md:text-5xl font-display font-bold text-white">
+              O QUE DIZEM NOSSOS <span className="text-primary">CLIENTES</span>
             </h2>
           </motion.div>
 
@@ -624,7 +594,7 @@ const Home: React.FC = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="bg-gradient-to-r from-primary/10 to-transparent border border-primary/20 p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8"
+            className="bg-linear-to-r from-primary/10 to-transparent border border-primary/20 p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8"
           >
             <div className="text-center md:text-left">
               <h3 className="text-2xl font-display font-bold text-white mb-2">

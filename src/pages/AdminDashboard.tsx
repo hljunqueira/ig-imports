@@ -253,7 +253,7 @@ const AdminDashboard: React.FC = () => {
                           <img
                             alt={product.name}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                            src={product.image_url || 'https://via.placeholder.com/150'}
+                            src={product.image_url || '/ig-imports-logo.png'}
                           />
                         </div>
                       </td>

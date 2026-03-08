@@ -4,11 +4,10 @@ import { IMAGES } from '../constants';
 import { NavItem } from '../types';
 import { useCartStore } from '../store/cartStore';
 import { useAuthStore } from '../store/authStore';
-import { Category, categoryService } from '../lib/products';
 
 const Navbar: React.FC = () => {
     const [scrolled, setScrolled] = useState(false);
-    const [categories, setCategories] = useState<Category[]>([]);
+    const [showLoginModal, setShowLoginModal] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
     const { itemCount, openCart } = useCartStore();
@@ -20,21 +19,6 @@ const Navbar: React.FC = () => {
         };
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
-
-    // Carregar categorias dinâmicas do banco
-    useEffect(() => {
-        const loadCategories = async () => {
-            try {
-                const data = await categoryService.getAll();
-                // Filtrar apenas categorias ativas
-                const activeCategories = data.filter(cat => cat.is_active);
-                setCategories(activeCategories);
-            } catch (error) {
-                console.error('Error loading categories:', error);
-            }
-        };
-        loadCategories();
     }, []);
 
     const handleNavigation = (href: string) => {
@@ -58,26 +42,21 @@ const Navbar: React.FC = () => {
         navigate('/');
     };
 
-    // Categorias dinâmicas para o dropdown
-    const categoryChildren = categories.slice(0, 6).map(cat => ({
-        label: cat.name,
-        href: `/catalog?category=${cat.slug}`
-    }));
+
 
     const navLinks: NavItem[] = [
         { label: "Início", href: "hero" },
-        ...(categories.length > 0 ? [{
-            label: "Categorias",
-            href: "/catalog",
-            children: categoryChildren.length > 0 ? categoryChildren : [{ label: "Ver Todos", href: "/catalog" }]
-        }] : []),
-        { label: "Catálogo", href: "/catalog" },
+        { label: "Filosofia", href: "/philosophy" },
+        { label: "Categorias", href: "categories" },
+        { label: "Catálogo", href: "catalog" },
+        { label: "Avaliações", href: "reviews" },
+        { label: "Encomenda", href: "encomenda" },
     ];
 
     const count = itemCount();
 
     return (
-        <nav className={`fixed top-0 z-50 w-full transition-all duration-300 ${scrolled ? 'bg-black/80 backdrop-blur-md py-2' : 'bg-transparent py-6'}`}>
+        <nav className={`fixed top-0 z-[100] w-full transition-all duration-300 ${scrolled ? 'bg-black/80 backdrop-blur-md py-2' : 'bg-transparent py-6'}`}>
             <div className="max-w-480 mx-auto px-6 sm:px-12">
                 <div className="flex justify-between items-center h-16">
                     <div
@@ -92,30 +71,14 @@ const Navbar: React.FC = () => {
                     </div>
                     <div className="hidden lg:flex items-center gap-8">
                         {navLinks.map((link) => (
-                            <div key={link.label} className="relative group">
-                                <button
-                                    onClick={() => !link.children && handleNavigation(link.href)}
-                                    className={`text-[10px] font-bold uppercase tracking-[0.2em] transition-all hover:text-primary relative py-4 ${location.pathname === link.href ? 'text-primary' : 'text-gray-300'}`}
-                                >
-                                    {link.label}
-                                    <span className={`absolute bottom-2 left-0 h-px bg-primary transition-all duration-300 ${location.pathname === link.href ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
-                                </button>
-
-                                {/* Dropdown Menu */}
-                                {link.children && (
-                                    <div className="absolute top-full left-0 bg-background-dark border border-white/10 py-2 min-w-45 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-50">
-                                        {link.children.map((child) => (
-                                            <button
-                                                key={child.label}
-                                                onClick={() => handleNavigation(child.href)}
-                                                className="block w-full text-left px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
-                                            >
-                                                {child.label}
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
+                            <button
+                                key={link.label}
+                                onClick={() => handleNavigation(link.href)}
+                                className={`text-[10px] font-bold uppercase tracking-[0.2em] transition-all hover:text-primary relative py-4 ${location.pathname === link.href ? 'text-primary' : 'text-gray-300'}`}
+                            >
+                                {link.label}
+                                <span className={`absolute bottom-2 left-0 h-px bg-primary transition-all duration-300 ${location.pathname === link.href ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
+                            </button>
                         ))}
                     </div>
                     <div className="flex items-center gap-4">
@@ -165,17 +128,66 @@ const Navbar: React.FC = () => {
                                 </div>
                             </div>
                         ) : (
-                            <Link
-                                to="/login"
+                            <button
+                                onClick={() => setShowLoginModal(true)}
                                 className="text-[10px] font-bold uppercase tracking-widest text-gray-300 hover:text-primary transition-colors flex items-center gap-1"
                             >
                                 <span className="material-symbols-outlined text-base">person</span>
                                 <span className="hidden sm:inline">Entrar</span>
-                            </Link>
+                            </button>
                         )}
                     </div>
                 </div>
             </div>
+
+            {/* Login Modal */}
+            {showLoginModal && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+                    <div className="bg-background-dark border border-white/10 p-8 max-w-md w-full mx-4 relative">
+                        <button
+                            onClick={() => setShowLoginModal(false)}
+                            className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+                        >
+                            <span className="material-symbols-outlined">close</span>
+                        </button>
+                        
+                        <div className="text-center mb-8">
+                            <h2 className="text-2xl font-display font-bold text-white mb-2">
+                                BEM-VINDO À <span className="text-primary">IG IMPORTS</span>
+                            </h2>
+                            <p className="text-gray-400 text-sm">Escolha sua área de acesso</p>
+                        </div>
+
+                        <div className="space-y-4">
+                            <Link
+                                to="/client-area"
+                                onClick={() => setShowLoginModal(false)}
+                                className="flex items-center gap-4 w-full bg-white/5 border border-white/10 p-4 hover:border-primary/50 hover:bg-white/10 transition-all group"
+                            >
+                                <span className="material-symbols-outlined text-3xl text-primary">person</span>
+                                <div className="text-left">
+                                    <span className="block text-white font-bold text-sm group-hover:text-primary transition-colors">Área do Cliente</span>
+                                    <span className="block text-gray-500 text-xs">Acompanhe seus pedidos</span>
+                                </div>
+                                <span className="material-symbols-outlined text-gray-500 ml-auto group-hover:text-primary transition-colors">arrow_forward</span>
+                            </Link>
+
+                            <Link
+                                to="/login"
+                                onClick={() => setShowLoginModal(false)}
+                                className="flex items-center gap-4 w-full bg-primary/10 border border-primary/30 p-4 hover:bg-primary/20 transition-all group"
+                            >
+                                <span className="material-symbols-outlined text-3xl text-primary">admin_panel_settings</span>
+                                <div className="text-left">
+                                    <span className="block text-white font-bold text-sm group-hover:text-primary transition-colors">Área Administrativa</span>
+                                    <span className="block text-gray-500 text-xs">Gestão da loja</span>
+                                </div>
+                                <span className="material-symbols-outlined text-gray-500 ml-auto group-hover:text-primary transition-colors">arrow_forward</span>
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            )}
         </nav>
     );
 };

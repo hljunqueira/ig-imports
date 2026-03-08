@@ -31,7 +31,7 @@ export const getSalesReport = async (req: Request, res: Response): Promise<void>
              AND status != 'cancelled'
              GROUP BY TO_CHAR(created_at, $1)
              ORDER BY period ASC`,
-            [dateFormat, startDate || '2024-01-01', endDate || '2024-12-31']
+            [dateFormat, startDate || new Date(new Date().getFullYear(), 0, 1).toISOString(), endDate || new Date().toISOString()]
         );
 
         res.json({ success: true, data: result.rows });
@@ -123,7 +123,7 @@ export const getFinancialReport = async (req: Request, res: Response): Promise<v
              AND payment_status = 'completed'
              GROUP BY transaction_type, category
              ORDER BY transaction_type, total_amount DESC`,
-            [startDate || '2024-01-01', endDate || '2024-12-31']
+            [startDate || new Date(new Date().getFullYear(), 0, 1).toISOString(), endDate || new Date().toISOString()]
         );
 
         res.json({ success: true, data: result.rows });

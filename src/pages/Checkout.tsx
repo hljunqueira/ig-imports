@@ -278,7 +278,7 @@ const Checkout: React.FC = () => {
                                     <div key={`${item.id}-${item.size}-${index}`} className="flex gap-3">
                                         <div className="w-14 h-16 bg-card-dark border border-white/5 overflow-hidden shrink-0">
                                             <img
-                                                src={item.image || 'https://via.placeholder.com/56'}
+                                                src={item.image || '/ig-imports-logo.png'}
                                                 alt={item.name}
                                                 className="w-full h-full object-cover"
                                             />

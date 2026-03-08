@@ -73,15 +73,8 @@ const AdminReviews: React.FC = () => {
     const handleReply = async () => {
         if (!selectedReview || !replyText.trim()) return;
 
-        // TODO: Get current user ID from auth
-        const adminId = 'current-user-id';
-
         try {
-            await reviewsService.addReply({
-                review_id: selectedReview.id,
-                reply_text: replyText,
-                replied_by: adminId,
-            });
+            await reviewsService.addReply(selectedReview.id, replyText);
 
             setShowReplyModal(false);
             setSelectedReview(null);

@@ -50,8 +50,8 @@ export const authService = {
         if (!token) return null;
 
         try {
-            const response = await apiClient.get<{ success: boolean; data: { user: AuthUser } }>('/auth/me');
-            return response.success ? response.data.user : null;
+            const response = await apiClient.get<{ success: boolean; data: AuthUser }>('/auth/me');
+            return response.success ? response.data : null;
         } catch (error) {
             console.error('[AUTH] Get current user error:', error);
             localStorage.removeItem('token');

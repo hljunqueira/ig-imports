@@ -55,7 +55,7 @@ export const orderService = {
     },
 
     async updateStatus(id: string, status: Order['status']): Promise<void> {
-        await apiClient.patch(`/orders/${id}/status`, { status });
+        await apiClient.put(`/orders/${id}/status`, { status });
     },
 };
 
@@ -63,7 +63,7 @@ export const orderService = {
 // WHATSAPP INTEGRATION
 // ========================================
 
-const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '5548962310411';
+const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '';
 
 export const generateWhatsAppLink = (order: Order): string => {
     const items = order.items

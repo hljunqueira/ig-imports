@@ -9,7 +9,7 @@ export const reviewsService = {
     // Reviews
     async getReviews(filters?: { productId?: string; approved?: boolean; featured?: boolean }): Promise<ProductReview[]> {
         const params = new URLSearchParams();
-        if (filters?.productId) params.append('productId', filters.productId);
+        if (filters?.productId) params.append('product_id', filters.productId);
         if (filters?.approved !== undefined) params.append('approved', String(filters.approved));
         if (filters?.featured) params.append('featured', 'true');
         
@@ -19,8 +19,8 @@ export const reviewsService = {
     },
 
     async getPendingReviews(): Promise<ProductReview[]> {
-        const response = await apiClient.get<{ success: boolean; data: ProductReview[] }>('/reviews/pending');
-        return response.success ? response.data : [];
+        // Busca todas as reviews não aprovadas
+        return this.getReviews({ approved: false });
     },
 
     async createReview(review: Omit<ProductReview, 'id' | 'created_at' | 'updated_at' | 'is_approved' | 'is_featured' | 'helpful_count'>): Promise<ProductReview> {
@@ -30,7 +30,7 @@ export const reviewsService = {
     },
 
     async approveReview(id: string): Promise<ProductReview> {
-        const response = await apiClient.patch<{ success: boolean; data: ProductReview }>(`/reviews/${id}/approve`, {});
+        const response = await apiClient.post<{ success: boolean; data: ProductReview }>(`/reviews/${id}/approve`, {});
         if (!response.success) throw new Error('Failed to approve review');
         return response.data;
     },
@@ -40,24 +40,24 @@ export const reviewsService = {
     },
 
     async featureReview(id: string, featured: boolean): Promise<ProductReview> {
-        const response = await apiClient.patch<{ success: boolean; data: ProductReview }>(`/reviews/${id}/feature`, { featured });
+        const response = await apiClient.post<{ success: boolean; data: ProductReview }>(`/reviews/${id}/feature`, { featured });
         if (!response.success) throw new Error('Failed to feature review');
         return response.data;
     },
 
     async incrementHelpful(id: string): Promise<void> {
-        await apiClient.patch(`/reviews/${id}/helpful`, {});
+        await apiClient.post(`/reviews/${id}/helpful`, {});
     },
 
     // Replies
-    async addReply(reply: Omit<ReviewReply, 'id' | 'created_at'>): Promise<ReviewReply> {
-        const response = await apiClient.post<{ success: boolean; data: ReviewReply }>('/reviews/replies', reply);
+    async addReply(reviewId: string, replyText: string): Promise<ReviewReply> {
+        const response = await apiClient.post<{ success: boolean; data: ReviewReply }>(`/reviews/${reviewId}/reply`, { reply_text: replyText });
         if (!response.success) throw new Error('Failed to add reply');
         return response.data;
     },
 
-    async deleteReply(id: string): Promise<void> {
-        await apiClient.delete(`/reviews/replies/${id}`);
+    async deleteReply(reviewId: string): Promise<void> {
+        await apiClient.delete(`/reviews/${reviewId}`);
     },
 
     // Estatísticas

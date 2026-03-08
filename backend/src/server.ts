@@ -5,6 +5,9 @@ import morgan from 'morgan';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
+import path from 'path';
+import fs from 'fs';
+import multer from 'multer';
 
 import { testConnection } from './config/database';
 
@@ -18,11 +21,47 @@ import reviewsRoutes from './routes/reviews.routes';
 import requestsRoutes from './routes/requests.routes';
 import inventoryRoutes from './routes/inventory.routes';
 import reportsRoutes from './routes/reports.routes';
+import settingsRoutes from './routes/settings.routes';
+import couponsRoutes from './routes/coupons.routes';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, '..', 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Multer config for image uploads
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const folder = (req.body.folder || 'general') as string;
+        const uploadPath = path.join(uploadsDir, folder);
+        if (!fs.existsSync(uploadPath)) {
+            fs.mkdirSync(uploadPath, { recursive: true });
+        }
+        cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname);
+        const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
+        cb(null, uniqueName);
+    },
+});
+const upload = multer({
+    storage,
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype.startsWith('image/')) {
+            cb(null, true);
+        } else {
+            cb(new Error('Only image files are allowed'));
+        }
+    },
+});
 
 // Security middleware
 app.use(helmet());
@@ -63,6 +102,28 @@ app.get('/health', async (req, res) => {
     });
 });
 
+// Static files - uploaded images
+app.use('/uploads', express.static(uploadsDir));
+
+// Upload route
+app.post('/api/upload', upload.single('file'), (req, res) => {
+    try {
+        if (!req.file) {
+            res.status(400).json({ success: false, error: 'No file uploaded' });
+            return;
+        }
+
+        const folder = (req.body.folder || 'general') as string;
+        const baseUrl = process.env.API_BASE_URL || `http://localhost:${PORT}`;
+        const url = `${baseUrl}/uploads/${folder}/${req.file.filename}`;
+
+        res.json({ success: true, url });
+    } catch (error) {
+        console.error('Error uploading file:', error);
+        res.status(500).json({ success: false, error: 'Failed to upload file' });
+    }
+});
+
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productsRoutes);
@@ -73,6 +134,8 @@ app.use('/api/reviews', reviewsRoutes);
 app.use('/api/requests', requestsRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/reports', reportsRoutes);
+app.use('/api/settings', settingsRoutes);
+app.use('/api/coupons', couponsRoutes);
 
 // 404 handler
 app.use((req, res) => {

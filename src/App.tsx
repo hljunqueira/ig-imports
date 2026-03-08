@@ -5,6 +5,7 @@ import Catalog from './pages/Catalog';
 import ProductDetails from './pages/ProductDetails';
 import ClientArea from './pages/ClientArea';
 import Checkout from './pages/Checkout';
+import Philosophy from './pages/Philosophy';
 import AdminLayout from './pages/AdminLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import CartDrawer from './components/CartDrawer';
@@ -14,6 +15,11 @@ import { useAuthStore } from './store/authStore';
 
 const AnimatedRoutes: React.FC = () => {
   const location = useLocation();
+
+  useEffect(() => {
+    // Scroll para o topo ao mudar de página
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
 
   return (
     <AnimatePresence mode="wait">
@@ -25,6 +31,7 @@ const AnimatedRoutes: React.FC = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/client-area" element={<ClientArea />} />
           <Route path="/checkout" element={<Checkout />} />
+          <Route path="/philosophy" element={<Philosophy />} />
           <Route
             path="/admin"
             element={

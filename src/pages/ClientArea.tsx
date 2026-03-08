@@ -5,12 +5,16 @@ import Footer from '../components/Footer';
 import { motion } from 'framer-motion';
 import { orderService, Order } from '../lib/orders';
 import { settingsService, StoreSettings } from '../lib/settings';
+import { reviewsService } from '../lib/reviews';
+import type { ProductReview } from '../types';
 
 const ClientArea: React.FC = () => {
     const navigate = useNavigate();
     const [isLogin, setIsLogin] = useState(true);
     const [orders, setOrders] = useState<Order[]>([]);
+    const [reviews, setReviews] = useState<ProductReview[]>([]);
     const [loading, setLoading] = useState(false);
+    const [loadingReviews, setLoadingReviews] = useState(false);
     const [settings, setSettings] = useState<StoreSettings | null>(null);
 
     // Login form
@@ -23,6 +27,7 @@ const ClientArea: React.FC = () => {
     const handleSearchOrders = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
+        setLoadingReviews(true);
 
         try {
             const allOrders = await orderService.getAll();
@@ -34,12 +39,26 @@ const ClientArea: React.FC = () => {
             );
 
             setOrders(filtered);
+
+            // Buscar avaliações do cliente
+            try {
+                const allReviews = await reviewsService.getReviews();
+                const customerReviews = allReviews.filter(review => 
+                    review.customer_email?.toLowerCase() === loginForm.email.toLowerCase()
+                );
+                setReviews(customerReviews);
+            } catch (reviewError) {
+                console.error('Error fetching reviews:', reviewError);
+                setReviews([]);
+            }
+
             setIsLogin(false);
         } catch (error) {
             console.error('Error fetching orders:', error);
             alert('Erro ao buscar pedidos. Tente novamente.');
         } finally {
             setLoading(false);
+            setLoadingReviews(false);
         }
     };
 
@@ -79,6 +98,23 @@ const ClientArea: React.FC = () => {
             <span className={`px-2 py-1 text-[9px] font-bold uppercase tracking-wider ${styles[status] || 'bg-gray-500/20 text-gray-500'}`}>
                 {labels[status] || status}
             </span>
+        );
+    };
+
+    const renderStars = (rating: number) => {
+        return (
+            <div className="flex items-center gap-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                    <span
+                        key={star}
+                        className={`material-symbols-outlined text-sm ${
+                            star <= rating ? 'text-primary' : 'text-gray-600'
+                        }`}
+                    >
+                        star
+                    </span>
+                ))}
+            </div>
         );
     };
 
@@ -245,6 +281,67 @@ const ClientArea: React.FC = () => {
                                 ))}
                             </div>
                         )}
+
+                        {/* Reviews Section */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 }}
+                            className="mt-16"
+                        >
+                            <div className="flex items-center justify-between mb-8">
+                                <div>
+                                    <h2 className="text-2xl font-display font-bold">
+                                        MINHAS <span className="text-primary">AVALIAÇÕES</span>
+                                    </h2>
+                                    <p className="text-gray-400 text-sm mt-1">
+                                        {reviews.length} {reviews.length === 1 ? 'avaliação' : 'avaliações'}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {loadingReviews ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {[1, 2].map((n) => (
+                                        <div key={n} className="animate-pulse bg-card-dark border border-white/5 p-6">
+                                            <div className="h-4 bg-gray-700 w-1/3 mb-3"></div>
+                                            <div className="h-3 bg-gray-700 w-full mb-2"></div>
+                                            <div className="h-3 bg-gray-700 w-3/4"></div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : reviews.length === 0 ? (
+                                <div className="text-center py-12 bg-card-dark border border-white/5">
+                                    <span className="material-symbols-outlined text-5xl text-gray-600 mb-4 block">reviews</span>
+                                    <p className="text-gray-500">Ainda não há avaliações</p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {reviews.map((review) => (
+                                        <div
+                                            key={review.id}
+                                            className="bg-card-dark border border-white/5 p-6"
+                                        >
+                                            <div className="flex items-center justify-between mb-3">
+                                                {renderStars(review.rating)}
+                                                {review.is_approved ? (
+                                                    <span className="text-emerald-500 text-[10px] uppercase tracking-widest">Aprovada</span>
+                                                ) : (
+                                                    <span className="text-amber-500 text-[10px] uppercase tracking-widest">Pendente</span>
+                                                )}
+                                            </div>
+                                            <p className="text-gray-300 text-sm mb-3 line-clamp-3">{review.comment}</p>
+                                            <div className="flex items-center justify-between text-xs text-gray-500">
+                                                <span>{formatDate(review.created_at || '')}</span>
+                                                {review.is_featured && (
+                                                    <span className="text-primary">Destaque</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </motion.div>
                     </motion.div>
                 )}
             </main>

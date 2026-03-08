@@ -19,8 +19,8 @@ export const requestsService = {
     },
 
     async getPendingRequests(): Promise<ProductRequest[]> {
-        const response = await apiClient.get<{ success: boolean; data: ProductRequest[] }>('/requests/pending');
-        return response.success ? response.data : [];
+        // Usa filtro de status em vez de rota específica
+        return this.getRequests({ status: 'pending' });
     },
 
     async getRequestById(id: string): Promise<ProductRequest | null> {
@@ -47,26 +47,30 @@ export const requestsService = {
     async updateStatus(
         id: string,
         newStatus: ProductRequest['status'],
-        changedBy: string,
+        changedBy?: string,
         notes?: string
     ): Promise<ProductRequest> {
-        const response = await apiClient.patch<{ success: boolean; data: ProductRequest }>(`/requests/${id}/status`, {
-            newStatus,
-            changedBy,
+        const response = await apiClient.put<{ success: boolean; data: ProductRequest }>(`/requests/${id}/status`, {
+            status: newStatus,
             notes
         });
         if (!response.success) throw new Error('Failed to update status');
         return response.data;
     },
 
-    async assignRequest(id: string, adminId: string): Promise<ProductRequest> {
-        const response = await apiClient.patch<{ success: boolean; data: ProductRequest }>(`/requests/${id}/assign`, { adminId });
+    async assignRequest(id: string, adminId?: string): Promise<ProductRequest> {
+        const response = await apiClient.post<{ success: boolean; data: ProductRequest }>(`/requests/${id}/assign`, {});
         if (!response.success) throw new Error('Failed to assign request');
         return response.data;
     },
 
-    async quoteRequest(id: string, price: number, adminId: string, notes?: string): Promise<ProductRequest> {
-        return this.updateStatus(id, 'quoted', adminId, `Orçamento: R$ ${price.toFixed(2)}${notes ? ` - ${notes}` : ''}`);
+    async quoteRequest(id: string, price: number, adminId?: string, notes?: string): Promise<ProductRequest> {
+        const response = await apiClient.post<{ success: boolean; data: ProductRequest }>(`/requests/${id}/quote`, {
+            quoted_price: price,
+            admin_notes: notes,
+        });
+        if (!response.success) throw new Error('Failed to quote request');
+        return response.data;
     },
 
     async deleteRequest(id: string): Promise<void> {

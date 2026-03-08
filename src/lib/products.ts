@@ -95,14 +95,14 @@ export const categoryService = {
 export const productService = {
     async getAll(options?: {
         categoryId?: string;
-        categorySlug?: string;
         status?: string;
+        search?: string;
         featured?: boolean;
     }): Promise<Product[]> {
         const params = new URLSearchParams();
-        if (options?.categoryId) params.append('categoryId', options.categoryId);
-        if (options?.categorySlug) params.append('categorySlug', options.categorySlug);
+        if (options?.categoryId) params.append('category', options.categoryId);
         if (options?.status) params.append('status', options.status);
+        if (options?.search) params.append('search', options.search);
         if (options?.featured) params.append('featured', 'true');
 
         const query = params.toString() ? `?${params.toString()}` : '';
@@ -145,9 +145,19 @@ export const productService = {
     },
 
     async uploadImage(file: File, folder: string = 'products'): Promise<string> {
-        // For now, return a placeholder URL
-        // In production, implement file upload to your storage service
-        console.warn('Image upload not implemented for REST API');
-        return `https://via.placeholder.com/400x600?text=${encodeURIComponent(file.name)}`;
+        // Upload via FormData para a API
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('folder', folder);
+        const token = localStorage.getItem('token');
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+        const response = await fetch(`${API_URL}/upload`, {
+            method: 'POST',
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+            body: formData,
+        });
+        if (!response.ok) throw new Error('Failed to upload image');
+        const data = await response.json();
+        return data.url || '';
     },
 };

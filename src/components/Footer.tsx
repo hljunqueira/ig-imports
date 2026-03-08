@@ -19,8 +19,8 @@ const Footer: React.FC = () => {
     const navLinks = [
         { label: "Início", href: "/" },
         { label: "Catálogo", href: "/catalog" },
+        { label: "Filosofia", href: "/philosophy" },
         { label: "Área do Cliente", href: "/client-area" },
-        { label: "Contato", href: "/catalog" },
     ];
 
     return (

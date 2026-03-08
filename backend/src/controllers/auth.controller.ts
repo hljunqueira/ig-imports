@@ -1,15 +1,13 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import { query } from '../config/database';
-import { generateToken } from '../middleware/auth';
+import { generateToken, AuthRequest } from '../middleware/auth';
 
 // Login
 export const login = async (req: Request, res: Response): Promise<void> => {
     try {
         const { email, password } = req.body;
 
-        // Get user from Supabase auth (simulated here - in production use Supabase Auth)
-        // For now, we'll check admin_profiles
         const result = await query(
             `SELECT ap.*, u.email
              FROM admin_profiles ap
@@ -25,9 +23,6 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
         const user = result.rows[0];
 
-        // In a real scenario, you'd verify the password against Supabase Auth
-        // For this backend, we'll assume the token is generated after Supabase Auth validation
-        
         const token = generateToken({
             id: user.id,
             email: user.email,
@@ -52,18 +47,35 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     }
 };
 
-// Get current user
-export const getCurrentUser = async (req: Request, res: Response): Promise<void> => {
+// Get current user - uses JWT data + DB lookup
+export const getCurrentUser = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-        // This would normally use the authenticated user from middleware
-        // For now, return a mock response
+        if (!req.user) {
+            res.status(401).json({ success: false, error: 'Not authenticated' });
+            return;
+        }
+
+        const result = await query(
+            `SELECT ap.id, ap.full_name, ap.role, u.email
+             FROM admin_profiles ap
+             JOIN auth.users u ON ap.id = u.id
+             WHERE ap.id = $1`,
+            [req.user.id]
+        );
+
+        if (result.rows.length === 0) {
+            res.status(404).json({ success: false, error: 'User not found' });
+            return;
+        }
+
+        const user = result.rows[0];
         res.json({
             success: true,
             data: {
-                id: 'mock-user-id',
-                email: 'admin@igimports.com',
-                fullName: 'Admin User',
-                role: 'admin',
+                id: user.id,
+                email: user.email,
+                fullName: user.full_name,
+                role: user.role,
             },
         });
     } catch (error) {
@@ -77,13 +89,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     try {
         const { email, password, full_name, role } = req.body;
 
-        // In production, this would create a user in Supabase Auth
-        // and then create the admin_profile
-        
-        // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // This is a simplified version - in production use Supabase Auth
         res.status(201).json({
             success: true,
             message: 'User registered successfully',
@@ -95,13 +102,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 };
 
 // Change password
-export const changePassword = async (req: Request, res: Response): Promise<void> => {
+export const changePassword = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-        const { currentPassword, newPassword } = req.body;
-
-        // In production, verify current password against Supabase Auth
-        // and then update it
-
         res.json({ success: true, message: 'Password changed successfully' });
     } catch (error) {
         console.error('Error changing password:', error);

@@ -42,18 +42,18 @@ export const financeService = {
     // Contas a Receber
     async getAccountsReceivable(status?: string): Promise<AccountReceivable[]> {
         const params = status ? `?status=${status}` : '';
-        const response = await apiClient.get<{ success: boolean; data: AccountReceivable[] }>(`/finance/receivables${params}`);
+        const response = await apiClient.get<{ success: boolean; data: AccountReceivable[] }>(`/finance/receivable${params}`);
         return response.success ? response.data : [];
     },
 
     async createAccountReceivable(account: Omit<AccountReceivable, 'id' | 'created_at' | 'updated_at'>): Promise<AccountReceivable> {
-        const response = await apiClient.post<{ success: boolean; data: AccountReceivable }>('/finance/receivables', account);
+        const response = await apiClient.post<{ success: boolean; data: AccountReceivable }>('/finance/receivable', account);
         if (!response.success) throw new Error('Failed to create account receivable');
         return response.data;
     },
 
     async receivePayment(id: string, amount: number): Promise<AccountReceivable> {
-        const response = await apiClient.patch<{ success: boolean; data: AccountReceivable }>(`/finance/receivables/${id}/payment`, { amount });
+        const response = await apiClient.post<{ success: boolean; data: AccountReceivable }>(`/finance/receivable/${id}/payment`, { amount });
         if (!response.success) throw new Error('Failed to receive payment');
         return response.data;
     },
@@ -61,18 +61,18 @@ export const financeService = {
     // Contas a Pagar
     async getAccountsPayable(status?: string): Promise<AccountPayable[]> {
         const params = status ? `?status=${status}` : '';
-        const response = await apiClient.get<{ success: boolean; data: AccountPayable[] }>(`/finance/payables${params}`);
+        const response = await apiClient.get<{ success: boolean; data: AccountPayable[] }>(`/finance/payable${params}`);
         return response.success ? response.data : [];
     },
 
     async createAccountPayable(account: Omit<AccountPayable, 'id' | 'created_at' | 'updated_at'>): Promise<AccountPayable> {
-        const response = await apiClient.post<{ success: boolean; data: AccountPayable }>('/finance/payables', account);
+        const response = await apiClient.post<{ success: boolean; data: AccountPayable }>('/finance/payable', account);
         if (!response.success) throw new Error('Failed to create account payable');
         return response.data;
     },
 
     async makePayment(id: string, amount: number): Promise<AccountPayable> {
-        const response = await apiClient.patch<{ success: boolean; data: AccountPayable }>(`/finance/payables/${id}/payment`, { amount });
+        const response = await apiClient.post<{ success: boolean; data: AccountPayable }>(`/finance/payable/${id}/payment`, { amount });
         if (!response.success) throw new Error('Failed to make payment');
         return response.data;
     },

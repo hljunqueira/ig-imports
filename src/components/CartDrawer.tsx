@@ -70,7 +70,7 @@ const CartDrawer: React.FC = () => {
                                             {/* Image */}
                                             <div className="w-20 h-24 bg-background-dark border border-white/5 overflow-hidden shrink-0">
                                                 <img
-                                                    src={item.image || 'https://via.placeholder.com/80'}
+                                                    src={item.image || '/ig-imports-logo.png'}
                                                     alt={item.name}
                                                     className="w-full h-full object-cover"
                                                 />

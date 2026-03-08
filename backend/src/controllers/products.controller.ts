@@ -40,6 +40,30 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
     }
 };
 
+// Get product by slug
+export const getProductBySlug = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { slug } = req.params;
+        const result = await query(
+            `SELECT p.*, c.name as category_name 
+             FROM products p 
+             LEFT JOIN categories c ON p.category_id = c.id 
+             WHERE p.slug = $1`,
+            [slug]
+        );
+
+        if (result.rows.length === 0) {
+            res.status(404).json({ success: false, error: 'Product not found' });
+            return;
+        }
+
+        res.json({ success: true, data: result.rows[0] });
+    } catch (error) {
+        console.error('Error fetching product by slug:', error);
+        res.status(500).json({ success: false, error: 'Failed to fetch product' });
+    }
+};
+
 // Get product by ID
 export const getProductById = async (req: Request, res: Response): Promise<void> => {
     try {

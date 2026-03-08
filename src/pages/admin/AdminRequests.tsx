@@ -107,16 +107,8 @@ const AdminRequests: React.FC = () => {
             return;
         }
 
-        // TODO: Get current user ID from auth
-        const adminId = 'current-user-id';
-
         try {
-            await requestsService.updateRequest(selectedRequest.id, {
-                quoted_price: price,
-                admin_notes: adminNotes,
-                status: 'quoted',
-            });
-            await requestsService.updateStatus(selectedRequest.id, 'quoted', adminId, `Orçamento: ${formatCurrency(price)}`);
+            await requestsService.quoteRequest(selectedRequest.id, price, undefined, adminNotes);
         } catch (error) {
             alert('Erro ao enviar orçamento');
             return;
@@ -130,10 +122,8 @@ const AdminRequests: React.FC = () => {
     };
 
     const handleStatusChange = async (requestId: string, newStatus: ProductRequest['status']) => {
-        // TODO: Get current user ID from auth
-        const adminId = 'current-user-id';
         try {
-            await requestsService.updateStatus(requestId, newStatus, adminId);
+            await requestsService.updateStatus(requestId, newStatus);
             loadData();
         } catch (error) {
             alert('Erro ao atualizar status');
