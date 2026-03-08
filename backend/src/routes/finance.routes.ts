@@ -8,6 +8,7 @@ import {
     receivePayment,
     getAccountsPayable,
     createAccountPayable,
+    makePayment,
 } from '../controllers/finance.controller';
 import { authenticate, requireAdmin } from '../middleware/auth';
 
@@ -29,5 +30,6 @@ router.post('/receivable/:id/payment', receivePayment);
 // Accounts Payable
 router.get('/payable', getAccountsPayable);
 router.post('/payable', createAccountPayable);
+router.post('/payable/:id/payment', makePayment);
 
 export default router;

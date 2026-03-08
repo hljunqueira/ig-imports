@@ -243,17 +243,62 @@ export const getAccountsPayable = async (req: Request, res: Response): Promise<v
 
 export const createAccountPayable = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { supplier_id, description, amount, due_date, category } = req.body;
+        const { supplier_name, description, amount, due_date, notes } = req.body;
 
         const result = await query(
-            `INSERT INTO accounts_payable (supplier_id, description, amount, due_date, category)
-             VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-            [supplier_id, description, amount, due_date, category]
+            `INSERT INTO accounts_payable (supplier_name, description, amount, amount_paid, due_date, notes, status)
+             VALUES ($1, $2, $3, 0, $4, $5, 'pending') RETURNING *`,
+            [supplier_name, description, amount, due_date, notes]
         );
 
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (error) {
         console.error('Error creating account payable:', error);
         res.status(500).json({ success: false, error: 'Erro ao criar conta a pagar' });
+    }
+};
+
+// Make Payment (Accounts Payable)
+export const makePayment = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        const { amount } = req.body;
+
+        await withTransaction(async (client) => {
+            // Get current account
+            const accountResult = await client.query(
+                'SELECT * FROM accounts_payable WHERE id = $1',
+                [id]
+            );
+
+            if (accountResult.rows.length === 0) {
+                throw new Error('Account not found');
+            }
+
+            const account = accountResult.rows[0];
+            const newAmountPaid = parseFloat(account.amount_paid) + amount;
+            const newStatus = newAmountPaid >= parseFloat(account.amount) ? 'paid' : 'partial';
+
+            // Update account
+            await client.query(
+                `UPDATE accounts_payable 
+                 SET amount_paid = $1, status = $2, updated_at = NOW()
+                 WHERE id = $3`,
+                [newAmountPaid, newStatus, id]
+            );
+
+            // Create transaction record
+            await client.query(
+                `INSERT INTO financial_transactions 
+                 (transaction_type, category, amount, description, payment_method, payment_status)
+                 VALUES ('expense', 'Pagamento', $1, $2, 'transfer', 'completed')`,
+                [amount, `Pagamento - ${account.description || account.supplier_name || 'Fornecedor'}`]
+            );
+        });
+
+        res.json({ success: true, message: 'Pagamento registrado com sucesso' });
+    } catch (error) {
+        console.error('Error making payment:', error);
+        res.status(500).json({ success: false, error: 'Erro ao registrar pagamento' });
     }
 };
