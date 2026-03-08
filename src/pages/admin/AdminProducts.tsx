@@ -486,7 +486,7 @@ const AdminProducts: React.FC = () => {
                             <div className="w-24 h-32 bg-card-dark border border-white/5 overflow-hidden shrink-0">
                                 {formData.image_url ? (
                                     <img
-                                        src={formData.image_url}
+                                        src={getImageUrl(formData.image_url)}
                                         alt="Preview"
                                         className="w-full h-full object-cover"
                                     />
