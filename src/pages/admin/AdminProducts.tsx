@@ -482,8 +482,8 @@ const AdminProducts: React.FC = () => {
                         <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">
                             Imagem do Produto
                         </label>
-                        <div className="flex gap-4 items-start">
-                            <div className="w-24 h-32 bg-card-dark border border-white/5 overflow-hidden shrink-0">
+                        <div className="flex flex-col items-center gap-4">
+                            <div className="w-32 h-40 bg-card-dark border border-white/5 overflow-hidden">
                                 {formData.image_url ? (
                                     <img
                                         src={getImageUrl(formData.image_url)}
@@ -491,38 +491,30 @@ const AdminProducts: React.FC = () => {
                                         className="w-full h-full object-cover"
                                     />
                                 ) : (
-                                    <div className="w-full h-full flex items-center justify-center">
-                                        <span className="material-symbols-outlined text-2xl text-gray-600">image</span>
+                                    <div className="w-full h-full flex flex-col items-center justify-center gap-1">
+                                        <span className="material-symbols-outlined text-3xl text-gray-600">image</span>
+                                        <span className="text-[10px] text-gray-600 text-center leading-tight px-1">800×1000 px</span>
                                     </div>
                                 )}
                             </div>
-                            <div className="flex-1 space-y-2">
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleImageUpload}
-                                    className="hidden"
-                                    id="image-upload"
-                                />
-                                <label
-                                    htmlFor="image-upload"
-                                    className="inline-flex items-center gap-2 px-4 py-2 border border-white/10 text-[10px] font-bold uppercase tracking-widest hover:border-primary transition-colors cursor-pointer"
-                                >
-                                    {uploading ? (
-                                        <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span>
-                                    ) : (
-                                        <span className="material-symbols-outlined text-sm">upload</span>
-                                    )}
-                                    {uploading ? 'Enviando...' : 'Upload'}
-                                </label>
-                                <input
-                                    type="text"
-                                    value={formData.image_url}
-                                    onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                                    placeholder="Ou cole a URL da imagem"
-                                    className="w-full bg-background-dark border border-white/10 px-4 py-2 text-sm text-white focus:border-primary outline-none transition-colors"
-                                />
-                            </div>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageUpload}
+                                className="hidden"
+                                id="image-upload"
+                            />
+                            <label
+                                htmlFor="image-upload"
+                                className="inline-flex items-center gap-2 px-6 py-2.5 bg-primary/10 border border-primary/30 text-primary text-[11px] font-bold uppercase tracking-widest hover:bg-primary/20 transition-colors cursor-pointer"
+                            >
+                                {uploading ? (
+                                    <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                                ) : (
+                                    <span className="material-symbols-outlined text-sm">upload</span>
+                                )}
+                                {uploading ? 'Enviando...' : 'Upload Imagem'}
+                            </label>
                         </div>
                     </div>
 
