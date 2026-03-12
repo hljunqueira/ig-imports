@@ -98,6 +98,7 @@ export const createProduct = async (req: Request, res: Response): Promise<void> 
             original_price,
             category_id,
             image_url,
+            gallery,
             sizes,
             stock,
             min_stock,
@@ -110,9 +111,9 @@ export const createProduct = async (req: Request, res: Response): Promise<void> 
         const result = await query(
             `INSERT INTO products (
                 name, description, price, original_price, category_id, 
-                image_url, sizes, stock, min_stock, status, 
+                image_url, gallery, sizes, stock, min_stock, status, 
                 is_featured, tags, cost_price
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) 
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) 
             RETURNING *`,
             [
                 name,
@@ -121,6 +122,7 @@ export const createProduct = async (req: Request, res: Response): Promise<void> 
                 original_price,
                 category_id,
                 image_url,
+                gallery || [],
                 sizes,
                 stock,
                 min_stock || 5,
@@ -146,7 +148,7 @@ export const updateProduct = async (req: Request, res: Response): Promise<void> 
 
         const allowedFields = [
             'name', 'description', 'price', 'original_price', 'category_id',
-            'image_url', 'sizes', 'stock', 'min_stock', 'status',
+            'image_url', 'gallery', 'sizes', 'stock', 'min_stock', 'status',
             'is_featured', 'tags', 'cost_price', 'supplier_id'
         ];
 

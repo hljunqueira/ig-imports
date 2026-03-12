@@ -41,6 +41,7 @@ const AdminProducts: React.FC = () => {
         original_price: '',
         category_id: '',
         image_url: '',
+        gallery: [] as string[],
         sizes: [] as string[],
         stock: '0',
         status: 'active' as 'active' | 'draft' | 'sold_out',
@@ -89,6 +90,7 @@ const AdminProducts: React.FC = () => {
                 original_price: product.original_price?.toString() || '',
                 category_id: product.category_id || '',
                 image_url: product.image_url || '',
+                gallery: product.gallery || [],
                 sizes: product.sizes || [],
                 stock: product.stock.toString(),
                 status: product.status,
@@ -104,6 +106,7 @@ const AdminProducts: React.FC = () => {
                 original_price: '',
                 category_id: '',
                 image_url: '',
+                gallery: [],
                 sizes: [],
                 stock: '0',
                 status: 'active',
@@ -134,6 +137,25 @@ const AdminProducts: React.FC = () => {
         }
     };
 
+    const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setUploading(true);
+        try {
+            const imageUrl = await productService.uploadImage(file);
+            setFormData({ 
+                ...formData, 
+                gallery: [...(formData.gallery || []), imageUrl] 
+            });
+        } catch (err) {
+            console.error('Error uploading gallery image:', err);
+            await error('Erro ao fazer upload da imagem');
+        } finally {
+            setUploading(false);
+        }
+    };
+
     const toggleSize = (size: string) => {
         const sizes = formData.sizes.includes(size)
             ? formData.sizes.filter(s => s !== size)
@@ -155,6 +177,7 @@ const AdminProducts: React.FC = () => {
                 original_price: formData.original_price ? parseFloat(formData.original_price) : undefined,
                 category_id: formData.category_id || undefined,
                 image_url: formData.image_url || undefined,
+                gallery: formData.gallery?.length > 0 ? formData.gallery : undefined,
                 sizes: formData.sizes,
                 stock: parseInt(formData.stock) || 0,
                 status: formData.status,
@@ -481,7 +504,7 @@ const AdminProducts: React.FC = () => {
                     {/* Image Upload */}
                     <div>
                         <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">
-                            Imagem do Produto
+                            Imagem Principal
                         </label>
                         <div className="flex flex-col items-center gap-4">
                             <div className="w-32 h-40 bg-card-dark border border-white/5 overflow-hidden">
@@ -516,6 +539,57 @@ const AdminProducts: React.FC = () => {
                                 )}
                                 {uploading ? 'Enviando...' : 'Upload Imagem'}
                             </label>
+                        </div>
+                    </div>
+
+                    {/* Gallery Upload */}
+                    <div>
+                        <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">
+                            Galeria de Imagens
+                        </label>
+                        <p className="text-[10px] text-gray-500 mb-3">
+                            Adicione até 5 imagens adicionais do produto
+                        </p>
+                        <div className="grid grid-cols-5 gap-2">
+                            {/* Existing gallery images */}
+                            {formData.gallery?.map((img, index) => (
+                                <div key={index} className="relative aspect-square bg-card-dark border border-white/5 overflow-hidden group">
+                                    <img
+                                        src={getImageUrl(img)}
+                                        alt={`Gallery ${index + 1}`}
+                                        className="w-full h-full object-cover"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const newGallery = formData.gallery.filter((_, i) => i !== index);
+                                            setFormData({ ...formData, gallery: newGallery });
+                                        }}
+                                        className="absolute top-1 right-1 w-6 h-6 bg-red-500/80 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                        <span className="material-symbols-outlined text-sm">close</span>
+                                    </button>
+                                </div>
+                            ))}
+                            {/* Add new image slot */}
+                            {formData.gallery?.length < 5 && (
+                                <div className="aspect-square bg-card-dark border border-dashed border-white/20 overflow-hidden">
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleGalleryUpload}
+                                        className="hidden"
+                                        id="gallery-upload"
+                                    />
+                                    <label
+                                        htmlFor="gallery-upload"
+                                        className="w-full h-full flex flex-col items-center justify-center gap-1 cursor-pointer hover:bg-white/5 transition-colors"
+                                    >
+                                        <span className="material-symbols-outlined text-2xl text-gray-600">add</span>
+                                        <span className="text-[9px] text-gray-600">Adicionar</span>
+                                    </label>
+                                </div>
+                            )}
                         </div>
                     </div>
 

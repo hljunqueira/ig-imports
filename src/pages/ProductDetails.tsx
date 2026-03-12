@@ -25,6 +25,7 @@ const ProductDetails: React.FC = () => {
     const [product, setProduct] = useState<Product | null>(null);
     const [loading, setLoading] = useState(true);
     const [selectedSize, setSelectedSize] = useState<string | null>(null);
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [addedToCart, setAddedToCart] = useState(false);
     const { addItem, openCart } = useCartStore();
 
@@ -47,6 +48,7 @@ const ProductDetails: React.FC = () => {
 
             if (data) {
                 setProduct(data);
+                setSelectedImage(data.image_url || null);
             } else {
                 // Product not found
                 // navigate('/catalog'); // Redirect or show error?
@@ -114,19 +116,23 @@ const ProductDetails: React.FC = () => {
                     >
                         <div className="bg-gray-900 aspect-4/5 rounded-sm overflow-hidden border border-white/5">
                             <img
-                                src={getImageUrl(product.image_url)}
+                                src={getImageUrl(selectedImage || product.image_url)}
                                 alt={product.name}
                                 className="w-full h-full object-cover"
                             />
                         </div>
-                        {/* Thumbnails (Placeholder for Gallery) */}
+                        {/* Gallery Thumbnails */}
                         <div className="grid grid-cols-4 gap-4">
-                            {[product.image_url, ...(product.gallery || [])].slice(0, 4).map((img, idx) => (
-                                img && (
-                                    <div key={idx} className="aspect-square bg-gray-900 rounded-sm overflow-hidden border border-white/5 cursor-pointer hover:border-primary transition-colors">
-                                        <img src={getImageUrl(img)} alt="" className="w-full h-full object-cover" />
-                                    </div>
-                                )
+                            {[product.image_url, ...(product.gallery || [])].filter(Boolean).map((img, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => setSelectedImage(img)}
+                                    className={`aspect-square bg-gray-900 rounded-sm overflow-hidden border-2 transition-colors ${
+                                        selectedImage === img ? 'border-primary' : 'border-white/5 hover:border-primary/50'
+                                    }`}
+                                >
+                                    <img src={getImageUrl(img)} alt="" className="w-full h-full object-cover" />
+                                </button>
                             ))}
                         </div>
                     </motion.div>
