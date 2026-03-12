@@ -143,6 +143,13 @@ const AdminProducts: React.FC = () => {
         const file = e.target.files?.[0];
         if (!file) return;
 
+        // Limite de 10 imagens na galeria
+        const MAX_GALLERY_IMAGES = 10;
+        if ((formData.gallery || []).length >= MAX_GALLERY_IMAGES) {
+            await error(`Limite de ${MAX_GALLERY_IMAGES} imagens na galeria atingido`);
+            return;
+        }
+
         setUploading(true);
         try {
             const imageUrl = await productService.uploadImage(file);
@@ -231,8 +238,13 @@ const AdminProducts: React.FC = () => {
         const files = Array.from(e.dataTransfer.files as FileList).filter((f) => f.type.startsWith('image/'));
         if (files.length === 0) return;
 
-        // Limit to remaining slots
-        const remainingSlots = 5 - (formData.gallery?.length || 0);
+        // Limite de 10 imagens
+        const MAX_GALLERY_IMAGES = 10;
+        const remainingSlots = MAX_GALLERY_IMAGES - (formData.gallery?.length || 0);
+        if (remainingSlots <= 0) {
+            await error(`Limite de ${MAX_GALLERY_IMAGES} imagens na galeria atingido`);
+            return;
+        }
         const filesToUpload = files.slice(0, remainingSlots);
 
         setUploading(true);
@@ -254,7 +266,11 @@ const AdminProducts: React.FC = () => {
 
     // Paste handler for gallery
     const handleGalleryPaste = async (e: React.ClipboardEvent) => {
-        if (formData.gallery?.length >= 5) return;
+        const MAX_GALLERY_IMAGES = 10;
+        if (formData.gallery?.length >= MAX_GALLERY_IMAGES) {
+            await error(`Limite de ${MAX_GALLERY_IMAGES} imagens na galeria atingido`);
+            return;
+        }
         
         const items = e.clipboardData?.items;
         if (!items) return;
@@ -280,6 +296,14 @@ const AdminProducts: React.FC = () => {
                 break;
             }
         }
+    };
+
+    // Definir imagem da galeria como principal
+    const setMainImageFromGallery = (imageUrl: string) => {
+        setFormData({
+            ...formData,
+            image_url: imageUrl
+        });
     };
 
     const toggleSize = (size: string) => {
@@ -457,7 +481,7 @@ const AdminProducts: React.FC = () => {
                                     </td>
                                     <td className="p-6">
                                         <span className="text-[10px] text-gray-400 uppercase tracking-widest">
-                                            {product.category?.name || 'Sem Categoria'}
+                                            {(product as any).category_name || product.category?.name || 'Sem Categoria'}
                                         </span>
                                     </td>
                                     <td className="p-6">
@@ -684,7 +708,7 @@ const AdminProducts: React.FC = () => {
                             Galeria de Imagens
                         </label>
                         <p className="text-[10px] text-gray-500 mb-3">
-                            Arraste imagens aqui, cole (Ctrl+V) ou clique para adicionar até 5 fotos
+                            Arraste imagens aqui, cole (Ctrl+V) ou clique para adicionar até 10 fotos
                         </p>
                         <div 
                             className={`grid grid-cols-5 gap-2 p-2 rounded transition-colors ${
@@ -700,8 +724,20 @@ const AdminProducts: React.FC = () => {
                                     <img
                                         src={getImageUrl(img)}
                                         alt={`Gallery ${index + 1}`}
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-cover cursor-pointer"
+                                        onClick={() => setMainImageFromGallery(img)}
+                                        title="Clique para tornar imagem principal"
                                     />
+                                    {/* Botão tornar principal */}
+                                    <button
+                                        type="button"
+                                        onClick={() => setMainImageFromGallery(img)}
+                                        className="absolute top-1 left-1 w-6 h-6 bg-primary/80 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                        title="Tornar imagem principal"
+                                    >
+                                        <span className="material-symbols-outlined text-sm">star</span>
+                                    </button>
+                                    {/* Botão remover */}
                                     <button
                                         type="button"
                                         onClick={() => {
@@ -709,13 +745,14 @@ const AdminProducts: React.FC = () => {
                                             setFormData({ ...formData, gallery: newGallery });
                                         }}
                                         className="absolute top-1 right-1 w-6 h-6 bg-red-500/80 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                        title="Remover imagem"
                                     >
                                         <span className="material-symbols-outlined text-sm">close</span>
                                     </button>
                                 </div>
                             ))}
                             {/* Add new image slot */}
-                            {formData.gallery?.length < 5 && (
+                            {formData.gallery?.length < 10 && (
                                 <div className="aspect-square bg-card-dark border border-dashed border-white/20 overflow-hidden">
                                     <input
                                         type="file"

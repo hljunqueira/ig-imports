@@ -27,6 +27,8 @@ const ProductDetails: React.FC = () => {
     const [selectedSize, setSelectedSize] = useState<string | null>(null);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [addedToCart, setAddedToCart] = useState(false);
+    const [zoomOpen, setZoomOpen] = useState(false);
+    const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
     const { addItem, openCart } = useCartStore();
 
     useEffect(() => {
@@ -105,8 +107,8 @@ const ProductDetails: React.FC = () => {
         <div className="bg-background-dark min-h-screen text-slate-100 flex flex-col">
             <Navbar />
 
-            <main className="grow pt-32 pb-20 px-6 sm:px-12 max-w-480 mx-auto w-full">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24">
+            <main className="grow pt-20 pb-16 px-6 sm:px-12 max-w-7xl mx-auto w-full">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
 
                     {/* Gallery Section */}
                     <motion.div
@@ -114,11 +116,11 @@ const ProductDetails: React.FC = () => {
                         animate={{ opacity: 1, x: 0 }}
                         className="space-y-4"
                     >
-                        <div className="bg-gray-900 aspect-4/5 rounded-sm overflow-hidden border border-white/5">
+                        <div className="bg-gray-900 aspect-4/5 rounded-sm overflow-hidden border border-white/5 cursor-zoom-in" onClick={() => setZoomOpen(true)}>
                             <img
                                 src={getImageUrl(selectedImage || product.image_url)}
                                 alt={product.name}
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                             />
                         </div>
                         {/* Gallery Thumbnails */}
@@ -145,7 +147,7 @@ const ProductDetails: React.FC = () => {
                     >
                         <div className="mb-2">
                             <span className="text-primary text-xs font-bold uppercase tracking-[0.2em]">
-                                {product.category?.name || 'Coleção'}
+                                {(product as any).category_name || product.category?.name || 'Coleção'}
                             </span>
                         </div>
 
@@ -173,7 +175,12 @@ const ProductDetails: React.FC = () => {
                             <div className="mb-10">
                                 <div className="flex justify-between items-center mb-4">
                                     <span className="text-xs font-bold uppercase tracking-widest text-gray-400">Tamanho</span>
-                                    <button className="text-xs text-primary hover:underline">Guia de Medidas</button>
+                                    <button 
+                                        className="text-xs text-primary hover:underline"
+                                        onClick={() => setSizeGuideOpen(true)}
+                                    >
+                                        Guia de Medidas
+                                    </button>
                                 </div>
                                 <div className="flex flex-wrap gap-3">
                                     {product.sizes.map((size) => (
@@ -226,6 +233,115 @@ const ProductDetails: React.FC = () => {
 
                 </div>
             </main>
+
+            {/* Modal de Zoom */}
+            {zoomOpen && (
+                <div 
+                    className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4"
+                    onClick={() => setZoomOpen(false)}
+                >
+                    <button 
+                        className="absolute top-4 right-4 text-white/80 hover:text-white p-2"
+                        onClick={() => setZoomOpen(false)}
+                    >
+                        <span className="material-symbols-outlined text-3xl">close</span>
+                    </button>
+                    <img 
+                        src={getImageUrl(selectedImage || product?.image_url)}
+                        alt={product?.name}
+                        className="max-w-full max-h-full object-contain"
+                        onClick={(e) => e.stopPropagation()}
+                    />
+                </div>
+            )}
+
+            {/* Modal de Guia de Medidas */}
+            {sizeGuideOpen && (
+                <div 
+                    className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+                    onClick={() => setSizeGuideOpen(false)}
+                >
+                    <div 
+                        className="bg-card-dark border border-white/10 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="p-6 border-b border-white/10 flex justify-between items-center">
+                            <h2 className="text-lg font-display font-bold tracking-widest">GUIA DE MEDIDAS</h2>
+                            <button 
+                                className="text-white/60 hover:text-white p-1"
+                                onClick={() => setSizeGuideOpen(false)}
+                            >
+                                <span className="material-symbols-outlined text-2xl">close</span>
+                            </button>
+                        </div>
+                        <div className="p-6">
+                            <p className="text-gray-400 text-sm mb-6">
+                                Medidas aproximadas em centímetros. As medidas podem variar ±2cm dependendo do modelo.
+                            </p>
+                            
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm">
+                                    <thead>
+                                        <tr className="border-b border-white/10">
+                                            <th className="text-left py-3 px-4 text-primary font-bold">Tamanho</th>
+                                            <th className="text-center py-3 px-4 text-gray-400">Largura (cm)</th>
+                                            <th className="text-center py-3 px-4 text-gray-400">Comprimento (cm)</th>
+                                            <th className="text-center py-3 px-4 text-gray-400">Manga (cm)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr className="border-b border-white/5">
+                                            <td className="py-3 px-4 font-bold">P</td>
+                                            <td className="text-center py-3 px-4">48-50</td>
+                                            <td className="text-center py-3 px-4">68-70</td>
+                                            <td className="text-center py-3 px-4">18-20</td>
+                                        </tr>
+                                        <tr className="border-b border-white/5">
+                                            <td className="py-3 px-4 font-bold">M</td>
+                                            <td className="text-center py-3 px-4">51-53</td>
+                                            <td className="text-center py-3 px-4">70-72</td>
+                                            <td className="text-center py-3 px-4">19-21</td>
+                                        </tr>
+                                        <tr className="border-b border-white/5">
+                                            <td className="py-3 px-4 font-bold">G</td>
+                                            <td className="text-center py-3 px-4">54-56</td>
+                                            <td className="text-center py-3 px-4">72-74</td>
+                                            <td className="text-center py-3 px-4">20-22</td>
+                                        </tr>
+                                        <tr className="border-b border-white/5">
+                                            <td className="py-3 px-4 font-bold">GG</td>
+                                            <td className="text-center py-3 px-4">57-59</td>
+                                            <td className="text-center py-3 px-4">74-76</td>
+                                            <td className="text-center py-3 px-4">21-23</td>
+                                        </tr>
+                                        <tr className="border-b border-white/5">
+                                            <td className="py-3 px-4 font-bold">XGG</td>
+                                            <td className="text-center py-3 px-4">60-62</td>
+                                            <td className="text-center py-3 px-4">76-78</td>
+                                            <td className="text-center py-3 px-4">22-24</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="py-3 px-4 font-bold">XXGG</td>
+                                            <td className="text-center py-3 px-4">63-65</td>
+                                            <td className="text-center py-3 px-4">78-80</td>
+                                            <td className="text-center py-3 px-4">23-25</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div className="mt-6 p-4 bg-white/5 border border-white/10">
+                                <h3 className="text-sm font-bold mb-2 text-primary">Como medir:</h3>
+                                <ul className="text-xs text-gray-400 space-y-1">
+                                    <li><strong>Largura:</strong> Meia volta do peito, de axila a axila</li>
+                                    <li><strong>Comprimento:</strong> Do ombro até a barra da camiseta</li>
+                                    <li><strong>Manga:</strong> Do ombro até o final da manga</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <Footer />
         </div>

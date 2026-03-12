@@ -492,7 +492,7 @@ const Home: React.FC = () => {
               {[
                 { icon: 'verified', title: 'Produtos Exclusivos', desc: 'Importados direto da fonte com autenticidade garantida' },
                 { icon: 'schedule', title: 'Orçamento em 24h', desc: 'Resposta rápida com o melhor preço disponível' },
-                { icon: 'local_shipping', title: 'Entrega Garantida', desc: 'Rastreamento completo do pedido até sua porta' },
+                { icon: 'local_shipping', title: 'Retirada na Loja', desc: 'Agende sua retirada e retire com segurança em nossa loja' },,
               ].map((item, i) => (
                 <motion.div
                   key={item.icon}

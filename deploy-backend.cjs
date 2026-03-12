@@ -81,7 +81,19 @@ async function checkSSH() {
     }
 }
 
-// Passo 2: Copiar arquivos
+// Passo 2: Compilar TypeScript localmente
+async function buildLocal() {
+    log('\n🔨 Compilando TypeScript localmente...', 'cyan');
+    try {
+        exec(`cd "${CONFIG.LOCAL_BACKEND_PATH}" && npm run build`, { silent: false });
+        log('✅ Compilação concluída!', 'green');
+    } catch (error) {
+        log('❌ Erro na compilação TypeScript', 'red');
+        throw error;
+    }
+}
+
+// Passo 3: Copiar arquivos
 async function copyFiles() {
     log('\n📦 Copiando arquivos do backend...', 'cyan');
     
@@ -90,10 +102,10 @@ async function copyFiles() {
     const localTarPath = path.join(__dirname, tarFile);
     
     try {
-        // Criar arquivo tar.gz com os arquivos do backend
+        // Criar arquivo tar.gz com dist/ compilado + package.json + Dockerfile
         log('  Criando pacote de deploy...', 'blue');
         exec(
-            `cd "${CONFIG.LOCAL_BACKEND_PATH}" && tar -czf "${localTarPath}" src package.json package-lock.json tsconfig.json .env Dockerfile`,
+            `cd "${CONFIG.LOCAL_BACKEND_PATH}" && tar -czf "${localTarPath}" dist package.json package-lock.json Dockerfile`,
             { silent: true }
         );
         
@@ -131,14 +143,13 @@ async function buildAndRestart() {
     log('\n🐳 Executando build Docker e reiniciando containers...', 'cyan');
     
     const commands = [
-        'cd /opt/ig-imports-api',
         'docker compose down',
         'docker compose build --no-cache',
         'docker compose up -d',
         'docker compose ps',
     ];
 
-    const remoteCommand = commands.join(' && ');
+    const remoteCommand = `cd /opt/ig-imports-api && ${commands.join(' && ')}`;
     
     try {
         exec(
@@ -207,6 +218,7 @@ async function main() {
         const sshOk = await checkSSH();
         if (!sshOk) process.exit(1);
         
+        await buildLocal();
         await copyFiles();
         await buildAndRestart();
         const healthOk = await healthCheck();
