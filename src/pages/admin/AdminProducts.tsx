@@ -26,6 +26,8 @@ const AdminProducts: React.FC = () => {
     const [deleteConfirm, setDeleteConfirm] = useState<Product | null>(null);
     const [saving, setSaving] = useState(false);
     const [uploading, setUploading] = useState(false);
+    const [dragOver, setDragOver] = useState(false);
+    const [galleryDragOver, setGalleryDragOver] = useState(false);
 
     // Filters
     const [filterCategory, setFilterCategory] = useState<string>('');
@@ -153,6 +155,130 @@ const AdminProducts: React.FC = () => {
             await error('Erro ao fazer upload da imagem');
         } finally {
             setUploading(false);
+        }
+    };
+
+    // Drag and Drop handlers for main image
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        setDragOver(true);
+    };
+
+    const handleDragLeave = (e: React.DragEvent) => {
+        e.preventDefault();
+        setDragOver(false);
+    };
+
+    const handleDrop = async (e: React.DragEvent) => {
+        e.preventDefault();
+        setDragOver(false);
+        
+        const file = e.dataTransfer.files?.[0];
+        if (!file || !file.type.startsWith('image/')) return;
+
+        setUploading(true);
+        try {
+            const imageUrl = await productService.uploadImage(file);
+            setFormData({ ...formData, image_url: imageUrl });
+        } catch (err) {
+            console.error('Error uploading image:', err);
+            await error('Erro ao fazer upload da imagem');
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    // Paste handler for main image
+    const handlePaste = async (e: React.ClipboardEvent) => {
+        const items = e.clipboardData?.items;
+        if (!items) return;
+
+        for (const item of items) {
+            if (item.type.startsWith('image/')) {
+                const file = item.getAsFile();
+                if (!file) continue;
+
+                setUploading(true);
+                try {
+                    const imageUrl = await productService.uploadImage(file);
+                    setFormData({ ...formData, image_url: imageUrl });
+                } catch (err) {
+                    console.error('Error uploading pasted image:', err);
+                    await error('Erro ao fazer upload da imagem');
+                } finally {
+                    setUploading(false);
+                }
+                break;
+            }
+        }
+    };
+
+    // Drag and Drop handlers for gallery
+    const handleGalleryDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        setGalleryDragOver(true);
+    };
+
+    const handleGalleryDragLeave = (e: React.DragEvent) => {
+        e.preventDefault();
+        setGalleryDragOver(false);
+    };
+
+    const handleGalleryDrop = async (e: React.DragEvent) => {
+        e.preventDefault();
+        setGalleryDragOver(false);
+        
+        const files = Array.from(e.dataTransfer.files as FileList).filter((f) => f.type.startsWith('image/'));
+        if (files.length === 0) return;
+
+        // Limit to remaining slots
+        const remainingSlots = 5 - (formData.gallery?.length || 0);
+        const filesToUpload = files.slice(0, remainingSlots);
+
+        setUploading(true);
+        try {
+            for (const file of filesToUpload) {
+                const imageUrl = await productService.uploadImage(file);
+                setFormData(prev => ({ 
+                    ...prev, 
+                    gallery: [...(prev.gallery || []), imageUrl] 
+                }));
+            }
+        } catch (err) {
+            console.error('Error uploading gallery images:', err);
+            await error('Erro ao fazer upload das imagens');
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    // Paste handler for gallery
+    const handleGalleryPaste = async (e: React.ClipboardEvent) => {
+        if (formData.gallery?.length >= 5) return;
+        
+        const items = e.clipboardData?.items;
+        if (!items) return;
+
+        for (const item of items) {
+            if (item.type.startsWith('image/')) {
+                const file = item.getAsFile();
+                if (!file) continue;
+
+                setUploading(true);
+                try {
+                    const imageUrl = await productService.uploadImage(file);
+                    setFormData(prev => ({ 
+                        ...prev, 
+                        gallery: [...(prev.gallery || []), imageUrl] 
+                    }));
+                } catch (err) {
+                    console.error('Error uploading pasted gallery image:', err);
+                    await error('Erro ao fazer upload da imagem');
+                } finally {
+                    setUploading(false);
+                }
+                break;
+            }
         }
     };
 
@@ -502,12 +628,22 @@ const AdminProducts: React.FC = () => {
                     </div>
 
                     {/* Image Upload */}
-                    <div>
+                    <div onPaste={handlePaste}>
                         <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">
                             Imagem Principal
                         </label>
+                        <p className="text-[10px] text-gray-500 mb-2">
+                            Arraste uma imagem, cole (Ctrl+V) ou clique para upload
+                        </p>
                         <div className="flex flex-col items-center gap-4">
-                            <div className="w-32 h-40 bg-card-dark border border-white/5 overflow-hidden">
+                            <div 
+                                className={`w-32 h-40 bg-card-dark border-2 overflow-hidden transition-colors ${
+                                    dragOver ? 'border-primary bg-primary/10' : 'border-white/5'
+                                }`}
+                                onDragOver={handleDragOver}
+                                onDragLeave={handleDragLeave}
+                                onDrop={handleDrop}
+                            >
                                 {formData.image_url ? (
                                     <img
                                         src={getImageUrl(formData.image_url)}
@@ -543,14 +679,21 @@ const AdminProducts: React.FC = () => {
                     </div>
 
                     {/* Gallery Upload */}
-                    <div>
+                    <div onPaste={handleGalleryPaste}>
                         <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">
                             Galeria de Imagens
                         </label>
                         <p className="text-[10px] text-gray-500 mb-3">
-                            Adicione até 5 imagens adicionais do produto
+                            Arraste imagens aqui, cole (Ctrl+V) ou clique para adicionar até 5 fotos
                         </p>
-                        <div className="grid grid-cols-5 gap-2">
+                        <div 
+                            className={`grid grid-cols-5 gap-2 p-2 rounded transition-colors ${
+                                galleryDragOver ? 'bg-primary/10 border-2 border-dashed border-primary' : ''
+                            }`}
+                            onDragOver={handleGalleryDragOver}
+                            onDragLeave={handleGalleryDragLeave}
+                            onDrop={handleGalleryDrop}
+                        >
                             {/* Existing gallery images */}
                             {formData.gallery?.map((img, index) => (
                                 <div key={index} className="relative aspect-square bg-card-dark border border-white/5 overflow-hidden group">
